@@ -28,6 +28,7 @@ import { fmtMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import type { Transaction } from "@/lib/calc";
+import { useSafetyMode } from "@/hooks/useSafetyMode";
 
 const typeColor = (t: string) =>
   t === "Deposit" || t === "Investment"
@@ -44,6 +45,7 @@ export default function Transactions() {
   const { data: accounts = [] } = useAccounts();
   const { data: txs = [], isLoading } = useTransactions();
   const qc = useQueryClient();
+  useSafetyMode();
 
   const [open, setOpen] = useState(false);
   const [edit, setEdit] = useState<Transaction | null>(null);

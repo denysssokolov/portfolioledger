@@ -34,6 +34,7 @@ import { toast } from "sonner";
 import { fmtMoney } from "@/lib/format";
 import { liveBalanceByAccount, type Account } from "@/lib/calc";
 import { cn } from "@/lib/utils";
+import { useSafetyMode } from "@/hooks/useSafetyMode";
 
 const ASSETS = ["Cash", "Shares", "Crypto"] as const;
 type AssetClass = (typeof ASSETS)[number];
@@ -50,6 +51,7 @@ export function AccountsManager() {
   const { data: accounts = [] } = useAccounts();
   const { data: txs = [] } = useTransactions();
   const { data: snaps = [] } = useSnapshots();
+  useSafetyMode();
 
   const [open, setOpen] = useState(false);
   const [edit, setEdit] = useState<Account | null>(null);
