@@ -121,7 +121,7 @@ export default function Dashboard() {
               ? ", " + user.user_metadata.display_name
               : ""
           }`}
-          subtitle={latestMonth ? monthLabel(latestMonth) : "No snapshots yet"}
+          subtitle={latestMonth ? `${new Date().getDate()} ${monthLabel(latestMonth)}` : "No snapshots yet"}
           right={
             <Button size="icon" variant="ghost" onClick={() => signOut()}
               className="h-10 w-10 rounded-xl text-muted-foreground hover:text-foreground">
