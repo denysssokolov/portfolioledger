@@ -7,11 +7,12 @@ import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { fmtMoney, GBP2, monthKey, monthLabel } from "@/lib/format";
+import { fmtMoney, monthKey, monthLabel } from "@/lib/format";
 import { investedByAccount, latestSnapshotByAccount, previousMonthISO, uniqueMonths } from "@/lib/calc";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Lock } from "lucide-react";
+import { useSafetyMode } from "@/hooks/useSafetyMode";
 
 export default function Snapshot() {
   const { user } = useAuth();
@@ -19,6 +20,7 @@ export default function Snapshot() {
   const { data: accounts = [] } = useAccounts();
   const { data: snaps = [] } = useSnapshots();
   const { data: txs = [] } = useTransactions();
+  const { safe } = useSafetyMode();
 
   const months = useMemo(() => {
     const set = new Set<string>(snaps.map((s) => s.month));
@@ -59,6 +61,7 @@ export default function Snapshot() {
 
   const save = async () => {
     if (!user) return;
+    if (safe) return toast.error("Safety mode is on. Disable it to save.");
     const rows = accounts
       .filter((a) => values[a.id]?.amount_now !== "")
       .map((a) => ({
@@ -118,14 +121,14 @@ export default function Snapshot() {
                   </div>
                   <div className="text-right">
                     <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Invested</div>
-                    <div className="text-sm tabular">{GBP2.format(invested)}</div>
+                    <div className="text-sm tabular">{fmtMoney(invested)}</div>
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   <div>
                     <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Invested</label>
                     <div className="h-12 rounded-xl bg-muted/40 border border-border flex items-center px-3 font-display text-lg font-bold tabular text-muted-foreground">
-                      {GBP2.format(invested)}
+                      {fmtMoney(invested)}
                     </div>
                   </div>
                   <div>
@@ -134,9 +137,10 @@ export default function Snapshot() {
                       type="number"
                       inputMode="decimal"
                       step="0.01"
-                      value={v.amount_now}
+                      value={safe ? "" : v.amount_now}
+                      disabled={safe}
                       onChange={(e) => setValues({ ...values, [a.id]: { ...v, amount_now: e.target.value } })}
-                      placeholder="0.00"
+                      placeholder={safe ? "••••" : "0.00"}
                       className="h-12 rounded-xl bg-secondary border-0 font-display text-lg font-bold tabular"
                     />
                   </div>
@@ -146,9 +150,10 @@ export default function Snapshot() {
                       type="number"
                       inputMode="decimal"
                       step="0.01"
-                      value={v.cash_portion}
+                      value={safe ? "" : v.cash_portion}
+                      disabled={safe}
                       onChange={(e) => setValues({ ...values, [a.id]: { ...v, cash_portion: e.target.value } })}
-                      placeholder="0.00"
+                      placeholder={safe ? "••••" : "0.00"}
                       className="h-12 rounded-xl bg-secondary border-0 font-display text-lg font-bold tabular"
                     />
                   </div>
@@ -165,9 +170,11 @@ export default function Snapshot() {
 
         <Button
           onClick={save}
+          disabled={safe}
           className="w-full mt-6 h-13 py-3.5 rounded-2xl bg-gradient-primary text-primary-foreground font-semibold shadow-elegant"
         >
-          <CheckCircle2 className="h-5 w-5 mr-2" /> Save snapshot
+          {safe ? <Lock className="h-5 w-5 mr-2" /> : <CheckCircle2 className="h-5 w-5 mr-2" />}
+          {safe ? "Safety mode on" : "Save snapshot"}
         </Button>
       </div>
     </>
