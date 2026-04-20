@@ -22,13 +22,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Search, Pencil, Trash2, ArrowUpRight, ArrowDownRight, ArrowLeftRight } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, ArrowUpRight, ArrowDownRight, ArrowLeftRight, Repeat, Power } from "lucide-react";
 import TransactionForm from "@/components/TransactionForm";
+import RecurringForm from "@/components/RecurringForm";
 import { fmtMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import type { Transaction } from "@/lib/calc";
 import { useSafetyMode } from "@/hooks/useSafetyMode";
+import { useRecurringTransactions, type Recurring } from "@/hooks/useRecurringTransactions";
 
 const typeColor = (t: string) =>
   t === "Deposit" || t === "Investment"
@@ -44,12 +46,16 @@ const typeIcon = (t: string) =>
 export default function Transactions() {
   const { data: accounts = [] } = useAccounts();
   const { data: txs = [], isLoading } = useTransactions();
+  const { data: recurring = [] } = useRecurringTransactions();
   const qc = useQueryClient();
   useSafetyMode();
 
   const [open, setOpen] = useState(false);
   const [edit, setEdit] = useState<Transaction | null>(null);
   const [del, setDel] = useState<Transaction | null>(null);
+  const [recOpen, setRecOpen] = useState(false);
+  const [recEdit, setRecEdit] = useState<Recurring | null>(null);
+  const [recDel, setRecDel] = useState<Recurring | null>(null);
   const [q, setQ] = useState("");
   const [type, setType] = useState<string>("all");
   const [acc, setAcc] = useState<string>("all");
