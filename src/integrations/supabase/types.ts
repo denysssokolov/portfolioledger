@@ -115,6 +115,72 @@ export type Database = {
           },
         ]
       }
+      recurring_transactions: {
+        Row: {
+          active: boolean
+          amount: number
+          asset_class: string
+          created_at: string
+          day_of_month: number
+          from_account_id: string | null
+          id: string
+          last_run_on: string | null
+          notes: string | null
+          start_date: string
+          to_account_id: string | null
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          amount: number
+          asset_class: string
+          created_at?: string
+          day_of_month: number
+          from_account_id?: string | null
+          id?: string
+          last_run_on?: string | null
+          notes?: string | null
+          start_date?: string
+          to_account_id?: string | null
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          amount?: number
+          asset_class?: string
+          created_at?: string
+          day_of_month?: number
+          from_account_id?: string | null
+          id?: string
+          last_run_on?: string | null
+          notes?: string | null
+          start_date?: string
+          to_account_id?: string | null
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recurring_transactions_from_account_id_fkey"
+            columns: ["from_account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_transactions_to_account_id_fkey"
+            columns: ["to_account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       snapshots: {
         Row: {
           account_id: string

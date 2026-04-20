@@ -1,26 +1,20 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import type { Account, Transaction } from "@/lib/calc";
+import type { Account } from "@/lib/calc";
+import type { Recurring } from "@/hooks/useRecurringTransactions";
 
 const TYPES = ["Deposit", "Withdrawal", "Transfer", "Profit Taken"] as const;
 const ASSETS = ["Cash", "Shares", "Crypto"] as const;
@@ -29,29 +23,27 @@ type Props = {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   accounts: Account[];
-  edit?: Transaction | null;
+  edit?: Recurring | null;
 };
 
-export default function TransactionForm({ open, onOpenChange, accounts, edit }: Props) {
+export default function RecurringForm({ open, onOpenChange, accounts, edit }: Props) {
   const { user } = useAuth();
   const qc = useQueryClient();
 
-  const initial = useMemo(
-    () => ({
-      occurred_on: edit?.occurred_on ?? new Date().toISOString().slice(0, 10),
-      type: (edit?.type ?? "Deposit") as (typeof TYPES)[number],
-      asset_class: (edit?.asset_class ?? "Cash") as (typeof ASSETS)[number],
-      from_account_id: edit?.from_account_id ?? "",
-      to_account_id: edit?.to_account_id ?? accounts[0]?.id ?? "",
-      amount: edit ? String(edit.amount) : "",
-      notes: edit?.notes ?? "",
-    }),
-    [edit, accounts, open]
-  );
+  const initial = useMemo(() => ({
+    type: (edit?.type ?? "Deposit") as (typeof TYPES)[number],
+    asset_class: (edit?.asset_class ?? "Cash") as (typeof ASSETS)[number],
+    from_account_id: edit?.from_account_id ?? "",
+    to_account_id: edit?.to_account_id ?? accounts[0]?.id ?? "",
+    amount: edit ? String(edit.amount) : "",
+    notes: edit?.notes ?? "",
+    day_of_month: edit?.day_of_month ?? new Date().getDate(),
+    start_date: edit?.start_date ?? new Date().toISOString().slice(0, 10),
+    active: edit?.active ?? true,
+  }), [edit, accounts, open]);
 
   const [f, setF] = useState(initial);
-  // Reset when reopening
-  useMemo(() => setF(initial), [initial]);
+  useEffect(() => setF(initial), [initial]);
 
   const needsFrom = f.type === "Withdrawal" || f.type === "Transfer" || f.type === "Profit Taken";
   const needsTo = f.type === "Deposit" || f.type === "Transfer";
@@ -60,50 +52,34 @@ export default function TransactionForm({ open, onOpenChange, accounts, edit }: 
     if (!user) return;
     const amt = Number(f.amount);
     if (!amt || amt <= 0) return toast.error("Enter an amount");
+    if (!f.day_of_month || f.day_of_month < 1 || f.day_of_month > 31)
+      return toast.error("Day of month must be 1–31");
     if (needsFrom && f.type !== "Profit Taken" && !f.from_account_id) return toast.error("Choose 'from' account");
     if (needsTo && !f.to_account_id) return toast.error("Choose 'to' account");
 
     const payload = {
       user_id: user.id,
-      occurred_on: f.occurred_on,
       type: f.type,
       asset_class: f.asset_class,
       amount: amt,
       from_account_id: needsFrom ? (f.from_account_id || null) : null,
       to_account_id: needsTo ? (f.to_account_id || null) : null,
       notes: f.notes.trim() || null,
+      day_of_month: Number(f.day_of_month),
+      start_date: f.start_date,
+      active: f.active,
     };
 
     const { error } = edit
-      ? await supabase.from("transactions").update(payload).eq("id", edit.id)
-      : await supabase.from("transactions").insert(payload);
+      ? await supabase.from("recurring_transactions").update(payload).eq("id", edit.id)
+      : await supabase.from("recurring_transactions").insert(payload);
 
     if (error) {
-      console.error("Transaction save failed:", error);
-      return toast.error("Couldn't save transaction. Please check your input and try again.");
+      console.error("Recurring save failed:", error);
+      return toast.error("Couldn't save schedule. Please try again.");
     }
-
-    // Auto-record realised P&L when logging a "Profit Taken" transaction (insert only).
-    // The transaction itself reduces the from-account balance; this entry adds the
-    // same amount to the realised lifetime so Total P&L on the dashboard is preserved.
-    if (!edit && f.type === "Profit Taken") {
-      const { error: rpnlErr } = await supabase.from("realised_pnl").insert({
-        user_id: user.id,
-        occurred_on: f.occurred_on,
-        account_id: f.from_account_id || null,
-        amount: amt,
-        notes: f.notes.trim() || "Auto-recorded from Profit Taken",
-      });
-      if (rpnlErr) {
-        console.error("Realised PnL auto-insert failed:", rpnlErr);
-        toast.error("Transaction saved, but couldn't auto-record realised P&L.");
-      } else {
-        qc.invalidateQueries({ queryKey: ["realised_pnl"] });
-      }
-    }
-
-    toast.success(edit ? "Updated" : f.type === "Profit Taken" ? "Logged & added to realised P&L" : "Logged");
-    qc.invalidateQueries({ queryKey: ["transactions"] });
+    toast.success(edit ? "Schedule updated" : "Recurring transaction created");
+    qc.invalidateQueries({ queryKey: ["recurring_transactions"] });
     onOpenChange(false);
   };
 
@@ -112,19 +88,21 @@ export default function TransactionForm({ open, onOpenChange, accounts, edit }: 
       <DialogContent className="bg-card border-border max-w-md rounded-3xl">
         <DialogHeader>
           <DialogTitle className="font-display text-xl">
-            {edit ? "Edit transaction" : "New transaction"}
+            {edit ? "Edit recurring" : "New recurring"}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Date</Label>
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Day of month</Label>
               <Input
-                type="date"
-                value={f.occurred_on}
-                onChange={(e) => setF({ ...f, occurred_on: e.target.value })}
-                className="h-11 rounded-xl bg-secondary border-0"
+                type="number"
+                min={1}
+                max={31}
+                value={f.day_of_month}
+                onChange={(e) => setF({ ...f, day_of_month: Number(e.target.value) })}
+                className="h-11 rounded-xl bg-secondary border-0 tabular"
               />
             </div>
             <div className="space-y-1.5">
@@ -134,9 +112,7 @@ export default function TransactionForm({ open, onOpenChange, accounts, edit }: 
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {TYPES.map((t) => (
-                    <SelectItem key={t} value={t}>{t}</SelectItem>
-                  ))}
+                  {TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -169,9 +145,7 @@ export default function TransactionForm({ open, onOpenChange, accounts, edit }: 
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="_none">External / —</SelectItem>
-                  {accounts.map((a) => (
-                    <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
-                  ))}
+                  {accounts.map((a) => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -187,26 +161,33 @@ export default function TransactionForm({ open, onOpenChange, accounts, edit }: 
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="_none">External / —</SelectItem>
-                  {accounts.map((a) => (
-                    <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
-                  ))}
+                  {accounts.map((a) => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label className="text-xs uppercase tracking-wide text-muted-foreground">Asset class</Label>
-            <Select value={f.asset_class} onValueChange={(v) => setF({ ...f, asset_class: v as any })}>
-              <SelectTrigger className="h-11 rounded-xl bg-secondary border-0">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ASSETS.map((a) => (
-                  <SelectItem key={a} value={a}>{a}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Asset class</Label>
+              <Select value={f.asset_class} onValueChange={(v) => setF({ ...f, asset_class: v as any })}>
+                <SelectTrigger className="h-11 rounded-xl bg-secondary border-0">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ASSETS.map((a) => <SelectItem key={a} value={a}>{a}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Starts on</Label>
+              <Input
+                type="date"
+                value={f.start_date}
+                onChange={(e) => setF({ ...f, start_date: e.target.value })}
+                className="h-11 rounded-xl bg-secondary border-0"
+              />
+            </div>
           </div>
 
           <div className="space-y-1.5">
@@ -223,7 +204,7 @@ export default function TransactionForm({ open, onOpenChange, accounts, edit }: 
             onClick={submit}
             className="w-full h-12 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-elegant"
           >
-            {edit ? "Save changes" : "Log transaction"}
+            {edit ? "Save changes" : "Create recurring"}
           </Button>
         </div>
       </DialogContent>

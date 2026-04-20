@@ -2,6 +2,7 @@ import { NavLink, Outlet } from "react-router-dom";
 import { LayoutDashboard, ArrowLeftRight, CalendarRange, Settings as SettingsIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SafetyModeToggle } from "@/components/SafetyModeToggle";
+import { useRecurringMaterialiser } from "@/hooks/useRecurringMaterialiser";
 
 const tabs = [
   { to: "/", label: "Home", icon: LayoutDashboard, end: true },
@@ -11,6 +12,7 @@ const tabs = [
 ];
 
 const AppLayout = () => {
+  useRecurringMaterialiser();
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SafetyModeToggle />
