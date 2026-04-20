@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Premium Fintech Design System — dark by default */
+
+@layer base {
+  :root {
+    /* Default = dark fintech palette */
+    --background: 222 18% 6%;
+    --foreground: 210 25% 96%;
+
+    --card: 222 16% 9%;
+    --card-foreground: 210 25% 96%;
+
+    --popover: 222 18% 8%;
+    --popover-foreground: 210 25% 96%;
+
+    /* Mint accent — Revolut/trading vibe */
+    --primary: 152 76% 56%;
+    --primary-foreground: 222 30% 6%;
+    --primary-glow: 152 90% 65%;
+
+    --secondary: 222 14% 14%;
+    --secondary-foreground: 210 25% 92%;
+
+    --muted: 222 14% 12%;
+    --muted-foreground: 215 14% 60%;
+
+    --accent: 222 14% 14%;
+    --accent-foreground: 210 25% 96%;
+
+    --destructive: 0 75% 58%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 152 76% 50%;
+    --success-foreground: 222 30% 6%;
+    --loss: 0 78% 62%;
+    --loss-foreground: 0 0% 100%;
+    --neutral: 215 14% 65%;
+
+    --border: 222 14% 14%;
+    --input: 222 14% 14%;
+    --ring: 152 76% 56%;
+
+    --radius: 1rem;
+
+    --gradient-primary: linear-gradient(135deg, hsl(152 76% 56%), hsl(165 80% 60%));
+    --gradient-card: linear-gradient(180deg, hsl(222 16% 10%), hsl(222 18% 7%));
+    --gradient-hero: radial-gradient(1000px 500px at 50% -10%, hsl(152 76% 56% / 0.18), transparent 60%);
+    --gradient-loss: linear-gradient(135deg, hsl(0 75% 58%), hsl(15 85% 60%));
+
+    --shadow-elegant: 0 30px 60px -30px hsl(152 76% 56% / 0.35);
+    --shadow-card: 0 1px 0 hsl(0 0% 100% / 0.04) inset, 0 20px 40px -20px hsl(0 0% 0% / 0.6);
+
+    --transition-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+
+    --sidebar-background: 222 18% 6%;
+    --sidebar-foreground: 210 25% 90%;
+    --sidebar-primary: 152 76% 56%;
+    --sidebar-primary-foreground: 222 30% 6%;
+    --sidebar-accent: 222 14% 14%;
+    --sidebar-accent-foreground: 210 25% 96%;
+    --sidebar-border: 222 14% 14%;
+    --sidebar-ring: 152 76% 56%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html, body, #root {
+    @apply h-full;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "ss01", "cv11", "tnum";
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer utilities {
+  .tabular { font-variant-numeric: tabular-nums; }
+  .glass {
+    background: hsl(222 16% 10% / 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .scroll-hide::-webkit-scrollbar { display: none; }
+  .scroll-hide { scrollbar-width: none; }
+  .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 0.5rem); }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(12px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.5); }
+  50% { box-shadow: 0 0 0 12px hsl(var(--primary) / 0); }
+}
+.animate-slide-up { animation: slide-up 0.4s var(--transition-smooth) both; }
+.animate-fade-in { animation: fade-in 0.3s ease-out both; }
+.animate-pulse-glow { animation: pulse-glow 2s infinite; }
