@@ -123,10 +123,22 @@ export default function Dashboard() {
           }`}
           subtitle={latestMonth ? monthLabel(latestMonth) : "No snapshots yet"}
           right={
-            <Button size="icon" variant="ghost" onClick={() => signOut()}
-              className="h-10 w-10 rounded-xl text-muted-foreground hover:text-foreground">
-              <LogOut className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={toggle}
+                aria-label={hidden ? "Show balances" : "Hide balances"}
+                title={hidden ? "Show balances" : "Hide balances"}
+                className="h-10 w-10 rounded-xl text-muted-foreground hover:text-foreground"
+              >
+                {hidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+              <Button size="icon" variant="ghost" onClick={() => signOut()}
+                className="h-10 w-10 rounded-xl text-muted-foreground hover:text-foreground">
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
           }
         />
 
