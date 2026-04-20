@@ -10,8 +10,6 @@ export const GBP2 = new Intl.NumberFormat("en-GB", {
   maximumFractionDigits: 2,
 });
 
-export let HIDE_NUMBERS = false;
-export const setHideNumbers = (v: boolean) => { HIDE_NUMBERS = v; };
 
 const MASK = "••••";
 
