@@ -15,7 +15,7 @@ const MASK = "••••";
 
 const isHidden = () => {
   if (typeof window === "undefined") return false;
-  return window.localStorage.getItem("hideBalances") === "1";
+  return window.localStorage.getItem("safetyMode") === "1";
 };
 
 export const fmtMoney = (n: number) => {

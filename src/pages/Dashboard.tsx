@@ -14,10 +14,9 @@ import {
   investedByAccount, latestSnapshotByAccount, liveBalanceByAccount, netContributions,
   previousMonthISO, totalsForMonth, uniqueMonths,
 } from "@/lib/calc";
-import { ArrowDownRight, ArrowUpRight, Eye, EyeOff, LogOut, Plus } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, LogOut, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import TransactionForm from "@/components/TransactionForm";
-import { useHideBalances } from "@/hooks/useHideBalances";
 
 const ASSET_COLORS: Record<string, string> = {
   Cash: "hsl(215 14% 65%)",
@@ -33,7 +32,6 @@ export default function Dashboard() {
   const { data: snaps = [] } = useSnapshots();
   const { data: rpnl = [] } = useRealisedPnL();
   const [open, setOpen] = useState(false);
-  const { hidden, toggle } = useHideBalances();
 
   const months = useMemo(() => uniqueMonths(snaps), [snaps]);
   const latestMonth = months[months.length - 1];
@@ -123,22 +121,10 @@ export default function Dashboard() {
           }`}
           subtitle={latestMonth ? monthLabel(latestMonth) : "No snapshots yet"}
           right={
-            <div className="flex items-center gap-1">
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={toggle}
-                aria-label={hidden ? "Show balances" : "Hide balances"}
-                title={hidden ? "Show balances" : "Hide balances"}
-                className="h-10 w-10 rounded-xl text-muted-foreground hover:text-foreground"
-              >
-                {hidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </Button>
-              <Button size="icon" variant="ghost" onClick={() => signOut()}
-                className="h-10 w-10 rounded-xl text-muted-foreground hover:text-foreground">
-                <LogOut className="h-4 w-4" />
-              </Button>
-            </div>
+            <Button size="icon" variant="ghost" onClick={() => signOut()}
+              className="h-10 w-10 rounded-xl text-muted-foreground hover:text-foreground">
+              <LogOut className="h-4 w-4" />
+            </Button>
           }
         />
 

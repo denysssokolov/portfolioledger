@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { LayoutDashboard, ArrowLeftRight, CalendarRange, Settings as SettingsIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SafetyModeToggle } from "@/components/SafetyModeToggle";
 
 const tabs = [
   { to: "/", label: "Home", icon: LayoutDashboard, end: true },
@@ -12,6 +13,7 @@ const tabs = [
 const AppLayout = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <SafetyModeToggle />
       <main className="mx-auto max-w-2xl pb-28">
         <Outlet />
       </main>
