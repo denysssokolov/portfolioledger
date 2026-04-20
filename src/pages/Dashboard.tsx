@@ -17,6 +17,7 @@ import {
 import { ArrowDownRight, ArrowUpRight, LogOut, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import TransactionForm from "@/components/TransactionForm";
+import { useSafetyMode } from "@/hooks/useSafetyMode";
 
 const ASSET_COLORS: Record<string, string> = {
   Cash: "hsl(215 14% 65%)",
@@ -32,6 +33,7 @@ export default function Dashboard() {
   const { data: snaps = [] } = useSnapshots();
   const { data: rpnl = [] } = useRealisedPnL();
   const [open, setOpen] = useState(false);
+  useSafetyMode(); // re-render when safety mode toggles
 
   const months = useMemo(() => uniqueMonths(snaps), [snaps]);
   const latestMonth = months[months.length - 1];
