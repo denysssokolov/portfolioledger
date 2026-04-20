@@ -33,6 +33,7 @@ export default function Dashboard() {
   const { data: snaps = [] } = useSnapshots();
   const { data: rpnl = [] } = useRealisedPnL();
   const [open, setOpen] = useState(false);
+  const { hidden, toggle } = useHideBalances();
 
   const months = useMemo(() => uniqueMonths(snaps), [snaps]);
   const latestMonth = months[months.length - 1];
