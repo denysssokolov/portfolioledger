@@ -12,6 +12,7 @@ const tabs = [
 ];
 
 const AppLayout = () => {
+  useRecurringMaterialiser();
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SafetyModeToggle />
