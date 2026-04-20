@@ -14,9 +14,10 @@ import {
   investedByAccount, latestSnapshotByAccount, liveBalanceByAccount, netContributions,
   previousMonthISO, totalsForMonth, uniqueMonths,
 } from "@/lib/calc";
-import { ArrowDownRight, ArrowUpRight, LogOut, Plus } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Eye, EyeOff, LogOut, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import TransactionForm from "@/components/TransactionForm";
+import { useHideBalances } from "@/hooks/useHideBalances";
 
 const ASSET_COLORS: Record<string, string> = {
   Cash: "hsl(215 14% 65%)",
