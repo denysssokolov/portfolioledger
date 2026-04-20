@@ -15,18 +15,23 @@ export const setHideNumbers = (v: boolean) => { HIDE_NUMBERS = v; };
 
 const MASK = "••••";
 
+const isHidden = () => {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem("hideBalances") === "1";
+};
+
 export const fmtMoney = (n: number) => {
-  if (HIDE_NUMBERS) return MASK;
+  if (isHidden()) return MASK;
   return Math.abs(n) >= 1000 ? GBP.format(n) : GBP2.format(n);
 };
 
 export const fmtSigned = (n: number) => {
-  if (HIDE_NUMBERS) return MASK;
-  return (n >= 0 ? "+" : "−") + fmtMoney(Math.abs(n));
+  if (isHidden()) return MASK;
+  return (n >= 0 ? "+" : "−") + (Math.abs(n) >= 1000 ? GBP.format(Math.abs(n)) : GBP2.format(Math.abs(n)));
 };
 
 export const fmtPct = (n: number, digits = 1) => {
-  if (HIDE_NUMBERS) return MASK;
+  if (isHidden()) return MASK;
   return (n >= 0 ? "+" : "−") + Math.abs(n).toFixed(digits) + "%";
 };
 
