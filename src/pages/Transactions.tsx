@@ -93,6 +93,26 @@ export default function Transactions() {
     setDel(null);
   };
 
+  const accName = (id: string | null) => (id ? accMap[id]?.name ?? "—" : "—");
+
+  const toggleRecurring = async (r: Recurring) => {
+    const { error } = await supabase
+      .from("recurring_transactions")
+      .update({ active: !r.active })
+      .eq("id", r.id);
+    if (error) return toast.error("Couldn't update schedule");
+    qc.invalidateQueries({ queryKey: ["recurring_transactions"] });
+  };
+
+  const doDeleteRecurring = async () => {
+    if (!recDel) return;
+    const { error } = await supabase.from("recurring_transactions").delete().eq("id", recDel.id);
+    if (error) return toast.error("Couldn't delete schedule");
+    toast.success("Schedule deleted");
+    qc.invalidateQueries({ queryKey: ["recurring_transactions"] });
+    setRecDel(null);
+  };
+
   return (
     <>
       <ScreenHeader
