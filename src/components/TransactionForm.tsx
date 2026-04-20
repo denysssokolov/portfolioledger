@@ -22,7 +22,7 @@ import {
 import { toast } from "sonner";
 import type { Account, Transaction } from "@/lib/calc";
 
-const TYPES = ["Deposit", "Withdrawal", "Transfer", "Investment", "Profit Taken"] as const;
+const TYPES = ["Deposit", "Withdrawal", "Transfer", "Profit Taken"] as const;
 const ASSETS = ["Cash", "Shares", "Crypto"] as const;
 
 type Props = {
@@ -54,7 +54,7 @@ export default function TransactionForm({ open, onOpenChange, accounts, edit }: 
   useMemo(() => setF(initial), [initial]);
 
   const needsFrom = f.type === "Withdrawal" || f.type === "Transfer" || f.type === "Profit Taken";
-  const needsTo = f.type === "Deposit" || f.type === "Transfer" || f.type === "Investment";
+  const needsTo = f.type === "Deposit" || f.type === "Transfer";
 
   const submit = async () => {
     if (!user) return;

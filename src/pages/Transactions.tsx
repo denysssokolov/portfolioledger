@@ -119,7 +119,7 @@ export default function Transactions() {
             <SelectTrigger className="h-11 rounded-xl bg-secondary border-0"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All types</SelectItem>
-              {["Deposit","Withdrawal","Transfer","Investment","Profit Taken"].map(t => (
+              {["Deposit","Withdrawal","Transfer","Profit Taken"].map(t => (
                 <SelectItem key={t} value={t}>{t}</SelectItem>
               ))}
             </SelectContent>
