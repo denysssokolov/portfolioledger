@@ -160,6 +160,65 @@ export default function Transactions() {
         </div>
       </div>
 
+      {/* Recurring schedules */}
+      <div className="px-5 mt-5">
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <Repeat className="h-3.5 w-3.5" /> Recurring monthly
+          </div>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => { setRecEdit(null); setRecOpen(true); }}
+            className="h-8 rounded-lg text-primary hover:text-primary"
+          >
+            <Plus className="h-4 w-4 mr-1" /> Add
+          </Button>
+        </div>
+        {recurring.length === 0 ? (
+          <div className="rounded-2xl bg-card border border-dashed border-border p-4 text-sm text-muted-foreground">
+            No recurring transactions. Add one to auto-log monthly deposits, withdrawals or transfers.
+          </div>
+        ) : (
+          <div className="rounded-2xl bg-card border border-border overflow-hidden divide-y divide-border">
+            {recurring.map((r) => {
+              const sign = r.type === "Deposit" ? "+" : r.type === "Withdrawal" || r.type === "Profit Taken" ? "−" : "";
+              const moneyClass = sign === "+" ? "text-success" : sign === "−" ? "text-loss" : "text-foreground";
+              const route = r.from_account_id && r.to_account_id
+                ? `${accName(r.from_account_id)} → ${accName(r.to_account_id)}`
+                : accName(r.from_account_id ?? r.to_account_id);
+              return (
+                <div key={r.id} className={cn("flex items-center gap-3 p-3 group", !r.active && "opacity-50")}>
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <Repeat className="h-5 w-5" strokeWidth={2.4} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{r.type} · day {r.day_of_month}</div>
+                    <div className="text-xs text-muted-foreground truncate">
+                      {route} · {r.asset_class}{r.notes ? ` · ${r.notes}` : ""}
+                    </div>
+                  </div>
+                  <div className={cn("font-display font-bold tabular text-right", moneyClass)}>
+                    {sign}{fmtMoney(Number(r.amount))}
+                  </div>
+                  <div className="flex flex-col gap-1 ml-1">
+                    <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => toggleRecurring(r)} title={r.active ? "Pause" : "Resume"}>
+                      <Power className={cn("h-3.5 w-3.5", r.active ? "text-success" : "text-muted-foreground")} />
+                    </Button>
+                    <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => { setRecEdit(r); setRecOpen(true); }}>
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button size="icon" variant="ghost" className="h-7 w-7 text-loss" onClick={() => setRecDel(r)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       <div className="px-5 mt-4 space-y-6">
         {isLoading && (
           <div className="text-center py-16 text-muted-foreground">Loading…</div>
@@ -226,6 +285,7 @@ export default function Transactions() {
       </div>
 
       <TransactionForm open={open} onOpenChange={setOpen} accounts={accounts} edit={edit} />
+      <RecurringForm open={recOpen} onOpenChange={setRecOpen} accounts={accounts} edit={recEdit} />
 
       <AlertDialog open={!!del} onOpenChange={(o) => !o && setDel(null)}>
         <AlertDialogContent className="bg-card border-border rounded-3xl">
@@ -236,6 +296,23 @@ export default function Transactions() {
           <AlertDialogFooter>
             <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={doDelete} className="rounded-xl bg-loss text-loss-foreground hover:bg-loss/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!recDel} onOpenChange={(o) => !o && setRecDel(null)}>
+        <AlertDialogContent className="bg-card border-border rounded-3xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete recurring schedule?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Past auto-generated transactions will remain. Future ones will stop.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={doDeleteRecurring} className="rounded-xl bg-loss text-loss-foreground hover:bg-loss/90">
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
