@@ -447,6 +447,7 @@ export default function Onboarding() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="external">External / —</SelectItem>
                             {drafts.map((d, idx) => (
                               <SelectItem key={idx} value={String(idx)}>
                                 {d.name}
