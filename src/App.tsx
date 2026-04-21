@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import Snapshot from "./pages/Snapshot";
 import Settings from "./pages/Settings";
+import SwingTrades from "./pages/SwingTrades";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -66,6 +67,7 @@ const App = () => (
               <Route path="/transactions" element={<Transactions />} />
               <Route path="/snapshot" element={<Snapshot />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/swing-trades" element={<SwingTrades />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
