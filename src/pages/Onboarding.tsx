@@ -123,14 +123,15 @@ export default function Onboarding() {
         .map((e) => {
           const amt = Number(e.amount);
           if (!amt) return null;
+          const isExternal = e.account_idx === "external";
           const idx = Number(e.account_idx);
-          const acc = insertedAccounts[idx];
-          if (!acc) return null;
+          const acc = isExternal ? null : insertedAccounts[idx];
+          if (!isExternal && !acc) return null;
           return {
             user_id: user.id,
             occurred_on: e.occurred_on,
-            account_id: acc.id,
-            amount: amt, // signed: positive profit, negative loss
+            account_id: acc?.id ?? null,
+            amount: amt,
             notes: e.notes.trim() || null,
           };
         })
