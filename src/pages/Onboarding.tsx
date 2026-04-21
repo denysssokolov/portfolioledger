@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, Wallet, ArrowRight, ArrowLeft, CheckCircle2, TrendingUp, TrendingDown } from "lucide-react";
+import { Plus, Trash2, Wallet, ArrowRight, ArrowLeft, CheckCircle2, TrendingUp, TrendingDown, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { monthKey } from "@/lib/format";
 import { cn } from "@/lib/utils";
