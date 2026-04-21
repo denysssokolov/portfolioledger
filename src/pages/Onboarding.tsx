@@ -68,7 +68,7 @@ export default function Onboarding() {
       initial[i] = seeds[i] ?? {
         invested: "",
         amount_now: "",
-        cash_portion: d.asset_class === "Cash" ? "" : "0",
+        cash_portion: "",
       };
     });
     setSeeds(initial);
