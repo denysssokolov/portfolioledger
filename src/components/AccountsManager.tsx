@@ -268,6 +268,10 @@ function AccountForm({
               placeholder="e.g. Trading 212 ISA"
               className="h-11 rounded-xl bg-secondary border-0"
               maxLength={60}
+              autoComplete="off"
+              data-1p-ignore
+              data-lpignore="true"
+              data-form-type="other"
             />
           </div>
           <div className="space-y-1.5">
