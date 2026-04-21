@@ -59,7 +59,7 @@ export default function Onboarding() {
     setBusy(true);
     try {
       const metaName = user.user_metadata?.full_name || user.user_metadata?.name;
-      const profilePayload: Record<string, unknown> = {
+      const profilePayload = {
         user_id: user.id,
         onboarded: true,
         ...(metaName && metaName.trim() ? { display_name: metaName.trim() } : {}),
