@@ -83,7 +83,7 @@ export default function Onboarding() {
     }
   };
 
-
+  const goToStep2 = () => {
     const valid = drafts.filter((d) => d.name.trim().length > 0);
     if (valid.length === 0) {
       toast.error("Add at least one account");
