@@ -14,7 +14,8 @@ import {
   investedByAccount, latestSnapshotByAccount, liveBalanceByAccount, netContributions,
   previousMonthISO, totalsForMonth, uniqueMonths,
 } from "@/lib/calc";
-import { ArrowDownRight, ArrowUpRight, LogOut, Plus } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Briefcase, ChevronRight, LogOut, Plus, TrendingUp } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import TransactionForm from "@/components/TransactionForm";
 import { useSafetyMode } from "@/hooks/useSafetyMode";
