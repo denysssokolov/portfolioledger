@@ -313,11 +313,16 @@ export default function Onboarding() {
                     value={d.name}
                     onChange={(e) => update(i, { name: e.target.value })}
                     placeholder="Account name"
+                    name={`account-label-${i}`}
                     className="flex-1 h-11 rounded-xl bg-secondary border-0"
                     autoComplete="off"
+                    autoCorrect="off"
+                    spellCheck={false}
                     data-1p-ignore
                     data-lpignore="true"
                     data-form-type="other"
+                    data-bwignore
+                    role="presentation"
                   />
                   <Select
                     value={d.asset_class}
