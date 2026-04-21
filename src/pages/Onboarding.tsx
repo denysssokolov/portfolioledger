@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, Wallet, ArrowRight, ArrowLeft, CheckCircle2, TrendingUp, TrendingDown } from "lucide-react";
+import { Plus, Trash2, Wallet, ArrowRight, ArrowLeft, CheckCircle2, TrendingUp, TrendingDown, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { monthKey } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -32,7 +32,7 @@ export default function Onboarding() {
   const { user } = useAuth();
   const nav = useNavigate();
   const qc = useQueryClient();
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<0 | 1 | 2 | 3>(0);
   const [drafts, setDrafts] = useState<Draft[]>(PRESETS);
   const [seeds, setSeeds] = useState<Record<number, SeedValues>>({});
   const [pastEntries, setPastEntries] = useState<PastEntry[]>([]);
@@ -54,6 +54,34 @@ export default function Onboarding() {
   const updatePast = (i: number, patch: Partial<PastEntry>) =>
     setPastEntries((p) => p.map((x, idx) => (idx === i ? { ...x, ...patch } : x)));
   const removePast = (i: number) => setPastEntries((p) => p.filter((_, idx) => idx !== i));
+  const skipOnboarding = async () => {
+    if (!user) return;
+    setBusy(true);
+    try {
+      const metaName = user.user_metadata?.full_name || user.user_metadata?.name;
+      const profilePayload = {
+        user_id: user.id,
+        onboarded: true,
+        ...(metaName && metaName.trim() ? { display_name: metaName.trim() } : {}),
+      };
+      const { error } = await supabase
+        .from("profiles")
+        .upsert(profilePayload, { onConflict: "user_id" });
+      if (error) throw error;
+      qc.setQueryData(["profile", user.id], (current: Record<string, unknown> | null) => ({
+        ...(current ?? {}),
+        ...profilePayload,
+      }));
+      await qc.invalidateQueries();
+      toast.success("Welcome! You can set up accounts anytime from Settings.");
+      nav("/", { replace: true });
+    } catch (e: any) {
+      console.error("Skip onboarding failed:", e);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const goToStep2 = () => {
     const valid = drafts.filter((d) => d.name.trim().length > 0);
@@ -202,34 +230,76 @@ export default function Onboarding() {
     <div className="min-h-screen bg-background relative">
       <div className="absolute inset-0 bg-gradient-hero pointer-events-none" />
       <div className="relative mx-auto max-w-2xl px-5 py-10">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="h-11 w-11 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-elegant">
-            <Wallet className="h-5 w-5 text-primary-foreground" strokeWidth={2.6} />
-          </div>
-          <div>
-            <h1 className="font-display text-2xl font-bold tracking-tight">
-              {step === 1
-                ? "Set up your accounts"
-                : step === 2
-                ? "Starting balances"
-                : "Past profits & losses"}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {step === 1
-                ? "Add the accounts you want to track."
-                : step === 2
-                ? "We'll save these as your first snapshot."
-                : "Log any profits or losses you've already secured. They'll appear in your transactions."}
+        {step === 0 && (
+          <div className="animate-slide-up">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="h-11 w-11 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-elegant">
+                <Wallet className="h-5 w-5 text-primary-foreground" strokeWidth={2.6} />
+              </div>
+              <div>
+                <h1 className="font-display text-2xl font-bold tracking-tight">
+                  Welcome to your portfolio
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Would you like to set up your investment accounts now?
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <Button
+                onClick={() => setStep(1)}
+                className="w-full h-14 rounded-2xl bg-gradient-primary text-primary-foreground font-semibold shadow-elegant text-base"
+              >
+                <Wallet className="h-5 w-5 mr-2" /> Set up accounts now
+              </Button>
+              <Button
+                variant="outline"
+                onClick={skipOnboarding}
+                disabled={busy}
+                className="w-full h-14 rounded-2xl text-base"
+              >
+                <Clock className="h-5 w-5 mr-2" /> Do it later
+              </Button>
+            </div>
+
+            <p className="text-xs text-muted-foreground text-center mt-4">
+              You can always add accounts from the Settings page.
             </p>
           </div>
-        </div>
+        )}
 
-        {/* Step indicator */}
-        <div className="flex items-center gap-2 mb-6">
-          <div className={`h-1.5 flex-1 rounded-full ${step >= 1 ? "bg-primary" : "bg-secondary"}`} />
-          <div className={`h-1.5 flex-1 rounded-full ${step >= 2 ? "bg-primary" : "bg-secondary"}`} />
-          <div className={`h-1.5 flex-1 rounded-full ${step >= 3 ? "bg-primary" : "bg-secondary"}`} />
-        </div>
+        {step >= 1 && (
+          <div className="flex items-center gap-3 mb-8">
+            <div className="h-11 w-11 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-elegant">
+              <Wallet className="h-5 w-5 text-primary-foreground" strokeWidth={2.6} />
+            </div>
+            <div>
+              <h1 className="font-display text-2xl font-bold tracking-tight">
+                {step === 1
+                  ? "Set up your accounts"
+                  : step === 2
+                  ? "Starting balances"
+                  : "Past profits & losses"}
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {step === 1
+                  ? "Add the accounts you want to track."
+                  : step === 2
+                  ? "We'll save these as your first snapshot."
+                  : "Log any profits or losses you've already secured."}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {step >= 1 && (
+          <div className="flex items-center gap-2 mb-6">
+            <div className={`h-1.5 flex-1 rounded-full ${step >= 1 ? "bg-primary" : "bg-secondary"}`} />
+            <div className={`h-1.5 flex-1 rounded-full ${step >= 2 ? "bg-primary" : "bg-secondary"}`} />
+            <div className={`h-1.5 flex-1 rounded-full ${step >= 3 ? "bg-primary" : "bg-secondary"}`} />
+          </div>
+        )}
 
         {step === 1 && (
           <>
