@@ -303,26 +303,31 @@ export default function Onboarding() {
 
         {step === 1 && (
           <>
-            <div className="space-y-3 animate-slide-up">
+            <div className="space-y-3 animate-slide-up" role="presentation">
+              {/* Hidden decoy to prevent Safari autofill on real inputs */}
+              <input type="text" name="prevent_autofill" id="prevent_autofill" style={{ display: 'none' }} tabIndex={-1} autoComplete="username" />
+              <input type="password" name="prevent_autofill_pw" id="prevent_autofill_pw" style={{ display: 'none' }} tabIndex={-1} autoComplete="current-password" />
               {drafts.map((d, i) => (
                 <div
                   key={i}
                   className="rounded-2xl border border-border bg-card p-3 flex items-center gap-2 shadow-card"
                 >
-                  <Input
+                  <input
+                    type="text"
                     value={d.name}
                     onChange={(e) => update(i, { name: e.target.value })}
                     placeholder="Account name"
                     name={`account-label-${i}`}
-                    className="flex-1 h-11 rounded-xl bg-secondary border-0"
+                    id={`account-label-${i}`}
+                    className="flex-1 h-11 rounded-xl bg-secondary border-0 flex w-full px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:text-sm"
                     autoComplete="off"
                     autoCorrect="off"
+                    autoCapitalize="off"
                     spellCheck={false}
-                    data-1p-ignore
+                    data-1p-ignore="true"
                     data-lpignore="true"
                     data-form-type="other"
-                    data-bwignore
-                    role="presentation"
+                    data-bwignore="true"
                   />
                   <Select
                     value={d.asset_class}
