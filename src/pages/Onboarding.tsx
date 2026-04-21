@@ -54,8 +54,36 @@ export default function Onboarding() {
   const updatePast = (i: number, patch: Partial<PastEntry>) =>
     setPastEntries((p) => p.map((x, idx) => (idx === i ? { ...x, ...patch } : x)));
   const removePast = (i: number) => setPastEntries((p) => p.filter((_, idx) => idx !== i));
+  const skipOnboarding = async () => {
+    if (!user) return;
+    setBusy(true);
+    try {
+      const metaName = user.user_metadata?.full_name || user.user_metadata?.name;
+      const profilePayload: Record<string, unknown> = {
+        user_id: user.id,
+        onboarded: true,
+        ...(metaName && metaName.trim() ? { display_name: metaName.trim() } : {}),
+      };
+      const { error } = await supabase
+        .from("profiles")
+        .upsert(profilePayload, { onConflict: "user_id" });
+      if (error) throw error;
+      qc.setQueryData(["profile", user.id], (current: Record<string, unknown> | null) => ({
+        ...(current ?? {}),
+        ...profilePayload,
+      }));
+      await qc.invalidateQueries();
+      toast.success("Welcome! You can set up accounts anytime from Settings.");
+      nav("/", { replace: true });
+    } catch (e: any) {
+      console.error("Skip onboarding failed:", e);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
 
-  const goToStep2 = () => {
+
     const valid = drafts.filter((d) => d.name.trim().length > 0);
     if (valid.length === 0) {
       toast.error("Add at least one account");
