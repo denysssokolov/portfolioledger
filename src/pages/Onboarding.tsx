@@ -32,7 +32,7 @@ export default function Onboarding() {
   const { user } = useAuth();
   const nav = useNavigate();
   const qc = useQueryClient();
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<0 | 1 | 2 | 3>(0);
   const [drafts, setDrafts] = useState<Draft[]>(PRESETS);
   const [seeds, setSeeds] = useState<Record<number, SeedValues>>({});
   const [pastEntries, setPastEntries] = useState<PastEntry[]>([]);
