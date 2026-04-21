@@ -114,48 +114,24 @@ export default function Onboarding() {
         if (txErr) throw txErr;
       }
 
-      // 2b. Build past realised profit/loss transactions (positive => Deposit, negative => Withdrawal).
-      // Their dates are historical, so they fall before the snapshot month and won't double-count
-      // against the snapshot's amount_now (see deltaSinceByAccount cutoff logic).
-      const pastTxRows = pastEntries
-        .map((e) => {
-          const amt = Number(e.amount);
-          if (!amt) return null;
-          const idx = Number(e.account_idx);
-          const acc = insertedAccounts[idx];
-          if (!acc) return null;
-          const isProfit = amt > 0;
-          return {
-            user_id: user.id,
-            occurred_on: e.occurred_on,
-            to_account_id: isProfit ? acc.id : null,
-            from_account_id: isProfit ? null : acc.id,
-            amount: Math.abs(amt),
-            type: isProfit ? "Deposit" : "Withdrawal",
-            asset_class: acc.asset_class,
-            notes: e.notes.trim() || (isProfit ? "Past realised profit" : "Past realised loss"),
-          };
-        })
-        .filter(Boolean) as any[];
-
-      if (pastTxRows.length > 0) {
-        const { error: pastErr } = await supabase.from("transactions").insert(pastTxRows);
-        if (pastErr) throw pastErr;
-      }
+      // 2b. Build past realised profit/loss into realised_pnl only.
+      // These are historical P&L entries and should NOT create transactions
+      // that would affect account balances.
 
       // 2c. Mirror past entries into realised_pnl so they count toward lifetime realised P&L.
       const rpnlRows = pastEntries
         .map((e) => {
           const amt = Number(e.amount);
           if (!amt) return null;
+          const isExternal = e.account_idx === "external";
           const idx = Number(e.account_idx);
-          const acc = insertedAccounts[idx];
-          if (!acc) return null;
+          const acc = isExternal ? null : insertedAccounts[idx];
+          if (!isExternal && !acc) return null;
           return {
             user_id: user.id,
             occurred_on: e.occurred_on,
-            account_id: acc.id,
-            amount: amt, // signed: positive profit, negative loss
+            account_id: acc?.id ?? null,
+            amount: amt,
             notes: e.notes.trim() || null,
           };
         })
@@ -471,6 +447,7 @@ export default function Onboarding() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="external">External / —</SelectItem>
                             {drafts.map((d, idx) => (
                               <SelectItem key={idx} value={String(idx)}>
                                 {d.name}
