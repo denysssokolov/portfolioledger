@@ -14,7 +14,7 @@ import {
   investedByAccount, latestSnapshotByAccount, liveBalanceByAccount, netContributions,
   previousMonthISO, totalsForMonth, uniqueMonths,
 } from "@/lib/calc";
-import { ArrowDownRight, ArrowUpRight, Briefcase, ChevronRight, LogOut, Plus, TrendingUp } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, LogOut, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import TransactionForm from "@/components/TransactionForm";
@@ -34,7 +34,6 @@ export default function Dashboard() {
   const { data: snaps = [] } = useSnapshots();
   const { data: rpnl = [] } = useRealisedPnL();
   const [open, setOpen] = useState(false);
-  const [showPortfolio, setShowPortfolio] = useState(false);
   const navigate = useNavigate();
   useSafetyMode(); // re-render when safety mode toggles
 
@@ -262,34 +261,6 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Asset Portfolio */}
-      <div className="px-5 mt-3">
-        <button
-          onClick={() => setShowPortfolio(!showPortfolio)}
-          className="w-full flex items-center justify-between rounded-2xl bg-card border border-border p-4 shadow-card transition-colors hover:bg-accent"
-        >
-          <div className="flex items-center gap-3">
-            <Briefcase className="h-5 w-5 text-primary" />
-            <span className="font-medium">Asset Portfolio</span>
-          </div>
-          <ChevronRight className={cn("h-4 w-4 text-muted-foreground transition-transform", showPortfolio && "rotate-90")} />
-        </button>
-
-        {showPortfolio && (
-          <div className="mt-2 animate-fade-in">
-            <button
-              onClick={() => navigate("/swing-trades")}
-              className="w-full flex items-center justify-between rounded-2xl bg-card border border-border p-4 shadow-card transition-colors hover:bg-accent"
-            >
-              <div className="flex items-center gap-3">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                <span className="font-medium">Swing Trades</span>
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            </button>
-          </div>
-        )}
-      </div>
 
       {/* Floating quick add */}
       <Button

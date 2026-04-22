@@ -1,23 +1,18 @@
-import { NavLink, Outlet } from "react-router-dom";
-import { LayoutDashboard, ArrowLeftRight, CalendarRange, Settings as SettingsIcon } from "lucide-react";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { BarChart3, LineChart, Settings as SettingsIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SafetyModeToggle } from "@/components/SafetyModeToggle";
 import { ServiceSwitcher } from "@/components/ServiceSwitcher";
-import { useRecurringMaterialiser } from "@/hooks/useRecurringMaterialiser";
 
 const tabs = [
-  { to: "/", label: "Home", icon: LayoutDashboard, end: true },
-  { to: "/transactions", label: "Tx", icon: ArrowLeftRight },
-  { to: "/snapshot", label: "Snapshot", icon: CalendarRange },
-  { to: "/settings", label: "Settings", icon: SettingsIcon },
+  { to: "/swing-trades", label: "Trades", icon: BarChart3, end: true },
+  { to: "/swing-trades/pnl", label: "PnL", icon: LineChart },
+  { to: "/swing-trades/settings", label: "Settings", icon: SettingsIcon },
 ];
 
-const AppLayout = () => {
-  useRecurringMaterialiser();
+const SwingTradesLayout = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <ServiceSwitcher />
-      <SafetyModeToggle />
       <main className="mx-auto max-w-2xl pb-28">
         <Outlet />
       </main>
@@ -25,7 +20,7 @@ const AppLayout = () => {
         className="fixed bottom-0 inset-x-0 z-40 glass border-t border-border safe-bottom"
         aria-label="Primary"
       >
-        <div className="mx-auto max-w-2xl grid grid-cols-4 px-2 pt-2">
+        <div className="mx-auto max-w-2xl grid grid-cols-3 px-2 pt-2">
           {tabs.map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}
@@ -60,4 +55,4 @@ const AppLayout = () => {
   );
 };
 
-export default AppLayout;
+export default SwingTradesLayout;

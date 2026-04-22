@@ -14,6 +14,9 @@ import Transactions from "./pages/Transactions";
 import Snapshot from "./pages/Snapshot";
 import Settings from "./pages/Settings";
 import SwingTrades from "./pages/SwingTrades";
+import SwingPnL from "./pages/SwingPnL";
+import SwingSettings from "./pages/SwingSettings";
+import SwingTradesLayout from "./components/SwingTradesLayout";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -67,7 +70,17 @@ const App = () => (
               <Route path="/transactions" element={<Transactions />} />
               <Route path="/snapshot" element={<Snapshot />} />
               <Route path="/settings" element={<Settings />} />
+            </Route>
+            <Route
+              element={
+                <Gate>
+                  <SwingTradesLayout />
+                </Gate>
+              }
+            >
               <Route path="/swing-trades" element={<SwingTrades />} />
+              <Route path="/swing-trades/pnl" element={<SwingPnL />} />
+              <Route path="/swing-trades/settings" element={<SwingSettings />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

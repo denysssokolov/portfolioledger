@@ -1,15 +1,15 @@
 import { ScreenHeader } from "@/components/ScreenHeader";
 
-export default function SwingTrades() {
+export default function SwingSettings() {
   return (
     <>
       <ScreenHeader
-        title="Trades"
-        subtitle="Track your swing trades"
+        title="Settings"
+        subtitle="Swing trade preferences"
       />
       <div className="px-5 mt-5">
         <div className="rounded-2xl bg-card border border-border p-6 text-center text-sm text-muted-foreground">
-          No trades yet. Start tracking your swing trades here.
+          Swing trade settings coming soon.
         </div>
       </div>
     </>
