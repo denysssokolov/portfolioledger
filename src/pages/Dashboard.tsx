@@ -14,7 +14,7 @@ import {
   investedByAccount, latestSnapshotByAccount, liveBalanceByAccount, netContributions,
   previousMonthISO, totalsForMonth, uniqueMonths,
 } from "@/lib/calc";
-import { ArrowDownRight, ArrowUpRight, Briefcase, ChevronRight, LogOut, Plus, TrendingUp } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, LogOut, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import TransactionForm from "@/components/TransactionForm";
@@ -34,7 +34,7 @@ export default function Dashboard() {
   const { data: snaps = [] } = useSnapshots();
   const { data: rpnl = [] } = useRealisedPnL();
   const [open, setOpen] = useState(false);
-  const [showPortfolio, setShowPortfolio] = useState(false);
+  const navigate = useNavigate();
   const navigate = useNavigate();
   useSafetyMode(); // re-render when safety mode toggles
 
