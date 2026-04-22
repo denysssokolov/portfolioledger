@@ -222,6 +222,87 @@ export type Database = {
           },
         ]
       }
+      swing_settings: {
+        Row: {
+          account_size: number | null
+          created_at: string
+          finhub_api_key: string | null
+          id: string
+          risk_percentage: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_size?: number | null
+          created_at?: string
+          finhub_api_key?: string | null
+          id?: string
+          risk_percentage?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_size?: number | null
+          created_at?: string
+          finhub_api_key?: string | null
+          id?: string
+          risk_percentage?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      swing_trades: {
+        Row: {
+          capital_invested: number
+          created_at: string
+          direction: string
+          entry_date: string
+          entry_price: number
+          exit_date: string | null
+          exit_price: number | null
+          id: string
+          notes: string | null
+          status: string
+          stop_loss: number | null
+          ticker: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          capital_invested: number
+          created_at?: string
+          direction: string
+          entry_date?: string
+          entry_price: number
+          exit_date?: string | null
+          exit_price?: number | null
+          id?: string
+          notes?: string | null
+          status?: string
+          stop_loss?: number | null
+          ticker: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          capital_invested?: number
+          created_at?: string
+          direction?: string
+          entry_date?: string
+          entry_price?: number
+          exit_date?: string | null
+          exit_price?: number | null
+          id?: string
+          notes?: string | null
+          status?: string
+          stop_loss?: number | null
+          ticker?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           amount: number
