@@ -35,7 +35,6 @@ export default function Dashboard() {
   const { data: rpnl = [] } = useRealisedPnL();
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
-  const navigate = useNavigate();
   useSafetyMode(); // re-render when safety mode toggles
 
   const months = useMemo(() => uniqueMonths(snaps), [snaps]);
