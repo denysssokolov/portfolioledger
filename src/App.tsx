@@ -14,6 +14,9 @@ import Transactions from "./pages/Transactions";
 import Snapshot from "./pages/Snapshot";
 import Settings from "./pages/Settings";
 import SwingTrades from "./pages/SwingTrades";
+import SwingPnL from "./pages/SwingPnL";
+import SwingSettings from "./pages/SwingSettings";
+import SwingTradesLayout from "./components/SwingTradesLayout";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();

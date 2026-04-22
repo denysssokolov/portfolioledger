@@ -2,6 +2,7 @@ import { NavLink, Outlet } from "react-router-dom";
 import { LayoutDashboard, ArrowLeftRight, CalendarRange, Settings as SettingsIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SafetyModeToggle } from "@/components/SafetyModeToggle";
+import { ServiceSwitcher } from "@/components/ServiceSwitcher";
 import { useRecurringMaterialiser } from "@/hooks/useRecurringMaterialiser";
 
 const tabs = [
@@ -15,6 +16,7 @@ const AppLayout = () => {
   useRecurringMaterialiser();
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <ServiceSwitcher />
       <SafetyModeToggle />
       <main className="mx-auto max-w-2xl pb-28">
         <Outlet />
