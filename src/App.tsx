@@ -70,7 +70,17 @@ const App = () => (
               <Route path="/transactions" element={<Transactions />} />
               <Route path="/snapshot" element={<Snapshot />} />
               <Route path="/settings" element={<Settings />} />
+            </Route>
+            <Route
+              element={
+                <Gate>
+                  <SwingTradesLayout />
+                </Gate>
+              }
+            >
               <Route path="/swing-trades" element={<SwingTrades />} />
+              <Route path="/swing-trades/pnl" element={<SwingPnL />} />
+              <Route path="/swing-trades/settings" element={<SwingSettings />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
