@@ -12,6 +12,7 @@ import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import Snapshot from "./pages/Snapshot";
+import SnapshotEditor from "./pages/SnapshotEditor";
 import Settings from "./pages/Settings";
 import SwingTrades from "./pages/SwingTrades";
 import SwingPnL from "./pages/SwingPnL";
@@ -69,6 +70,7 @@ const App = () => (
               <Route path="/" element={<Dashboard />} />
               <Route path="/transactions" element={<Transactions />} />
               <Route path="/snapshot" element={<Snapshot />} />
+              <Route path="/snapshot/:month" element={<SnapshotEditor />} />
               <Route path="/settings" element={<Settings />} />
             </Route>
             <Route
