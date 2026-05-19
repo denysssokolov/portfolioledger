@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
       const { error } = await admin.from(t).delete().eq("user_id", userId);
       if (error) {
         console.error(`Failed deleting ${t}:`, error);
-        return new Response(JSON.stringify({ error: `Failed to delete ${t}` }), {
+        return new Response(JSON.stringify({ error: "Account deletion failed. Please try again." }), {
           status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
