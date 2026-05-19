@@ -189,16 +189,18 @@ export type Database = {
           created_at: string
           id: string
           month: string
+          skipped: boolean
           updated_at: string
           user_id: string
         }
         Insert: {
           account_id: string
-          amount_now: number
+          amount_now?: number
           cash_portion?: number
           created_at?: string
           id?: string
           month: string
+          skipped?: boolean
           updated_at?: string
           user_id: string
         }
@@ -209,6 +211,7 @@ export type Database = {
           created_at?: string
           id?: string
           month?: string
+          skipped?: boolean
           updated_at?: string
           user_id?: string
         }
