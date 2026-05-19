@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
 
     // Delete user data (RLS bypassed by service role)
-    const tables = ["snapshots", "transactions", "realised_pnl", "accounts", "profiles"];
+    const tables = ["swing_trades", "swing_settings", "recurring_transactions", "snapshots", "transactions", "realised_pnl", "accounts", "profiles"];
     for (const t of tables) {
       const { error } = await admin.from(t).delete().eq("user_id", userId);
       if (error) {
