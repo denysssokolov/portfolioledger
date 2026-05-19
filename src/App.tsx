@@ -70,6 +70,7 @@ const App = () => (
               <Route path="/" element={<Dashboard />} />
               <Route path="/transactions" element={<Transactions />} />
               <Route path="/snapshot" element={<Snapshot />} />
+              <Route path="/snapshot/:month" element={<SnapshotEditor />} />
               <Route path="/settings" element={<Settings />} />
             </Route>
             <Route
