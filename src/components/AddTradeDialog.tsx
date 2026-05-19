@@ -73,7 +73,8 @@ export function AddTradeDialog({ open, onOpenChange, onSaved }: Props) {
     });
     setSaving(false);
     if (error) {
-      toast.error(error.message);
+      console.error("swing_trades insert error:", error);
+      toast.error("Couldn't save trade. Please try again.");
       return;
     }
     toast.success("Trade added");
