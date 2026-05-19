@@ -12,6 +12,7 @@ import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import Snapshot from "./pages/Snapshot";
+import SnapshotEditor from "./pages/SnapshotEditor";
 import Settings from "./pages/Settings";
 import SwingTrades from "./pages/SwingTrades";
 import SwingPnL from "./pages/SwingPnL";
