@@ -64,13 +64,16 @@ export default function Snapshot() {
     if (safe) return toast.error("Safety mode is on. Disable it to save.");
     const rows = accounts
       .filter((a) => values[a.id]?.amount_now !== "")
-      .map((a) => ({
-        user_id: user.id,
-        account_id: a.id,
-        month,
-        amount_now: Number(values[a.id].amount_now || 0),
-        cash_portion: Number(values[a.id].cash_portion || 0),
-      }));
+      .map((a) => {
+        const amt = Number(values[a.id].amount_now || 0);
+        return {
+          user_id: user.id,
+          account_id: a.id,
+          month,
+          amount_now: amt,
+          cash_portion: a.asset_class === "Cash" ? amt : Number(values[a.id].cash_portion || 0),
+        };
+      });
     if (rows.length === 0) return toast.error("Enter at least one balance");
     const { error } = await supabase
       .from("snapshots")
@@ -146,16 +149,22 @@ export default function Snapshot() {
                   </div>
                   <div>
                     <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Cash portion</label>
-                    <Input
-                      type="number"
-                      inputMode="decimal"
-                      step="0.01"
-                      value={safe ? "" : v.cash_portion}
-                      disabled={safe}
-                      onChange={(e) => setValues({ ...values, [a.id]: { ...v, cash_portion: e.target.value } })}
-                      placeholder={safe ? "••••" : "0.00"}
-                      className="h-12 rounded-xl bg-secondary border-0 font-display text-lg font-bold tabular"
-                    />
+                    {a.asset_class === "Cash" ? (
+                      <div className="h-12 rounded-xl bg-muted/40 border border-border flex items-center px-3 font-display text-lg font-bold tabular text-muted-foreground">
+                        {safe ? "••••" : (v.amount_now === "" ? "0.00" : Number(v.amount_now || 0).toFixed(2))}
+                      </div>
+                    ) : (
+                      <Input
+                        type="number"
+                        inputMode="decimal"
+                        step="0.01"
+                        value={safe ? "" : v.cash_portion}
+                        disabled={safe}
+                        onChange={(e) => setValues({ ...values, [a.id]: { ...v, cash_portion: e.target.value } })}
+                        placeholder={safe ? "••••" : "0.00"}
+                        className="h-12 rounded-xl bg-secondary border-0 font-display text-lg font-bold tabular"
+                      />
+                    )}
                   </div>
                 </div>
                 {pnl !== null && (

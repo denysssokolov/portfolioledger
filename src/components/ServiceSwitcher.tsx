@@ -20,7 +20,7 @@ export function ServiceSwitcher() {
           )}
         >
           <Briefcase className="h-4 w-4" />
-          Portfolio
+          Investment Portfolio
         </button>
         <button
           onClick={() => navigate("/swing-trades")}
