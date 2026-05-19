@@ -64,13 +64,16 @@ export default function Snapshot() {
     if (safe) return toast.error("Safety mode is on. Disable it to save.");
     const rows = accounts
       .filter((a) => values[a.id]?.amount_now !== "")
-      .map((a) => ({
-        user_id: user.id,
-        account_id: a.id,
-        month,
-        amount_now: Number(values[a.id].amount_now || 0),
-        cash_portion: Number(values[a.id].cash_portion || 0),
-      }));
+      .map((a) => {
+        const amt = Number(values[a.id].amount_now || 0);
+        return {
+          user_id: user.id,
+          account_id: a.id,
+          month,
+          amount_now: amt,
+          cash_portion: a.asset_class === "Cash" ? amt : Number(values[a.id].cash_portion || 0),
+        };
+      });
     if (rows.length === 0) return toast.error("Enter at least one balance");
     const { error } = await supabase
       .from("snapshots")
