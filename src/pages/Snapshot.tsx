@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { fmtMoney, monthKey, monthLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { CheckCircle2, Lock, SkipForward, Pencil } from "lucide-react";
+import { Lock, SkipForward, Pencil } from "lucide-react";
 import { useSafetyMode } from "@/hooks/useSafetyMode";
 import { isMonthEditable, daysLeftUntilEditable } from "@/lib/snapshotRules";
 
