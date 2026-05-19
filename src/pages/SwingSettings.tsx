@@ -51,8 +51,10 @@ export default function SwingSettings() {
       .upsert(payload, { onConflict: "user_id" });
 
     setSaving(false);
-    if (error) toast.error(error.message);
-    else toast.success("Settings saved");
+    if (error) {
+      console.error("swing_settings upsert error:", error);
+      toast.error("Couldn't save settings. Please try again.");
+    } else toast.success("Settings saved");
   };
 
   if (!loaded) return null;
