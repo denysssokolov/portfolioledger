@@ -44,7 +44,8 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (settingsError) {
-      return new Response(JSON.stringify({ error: settingsError.message }), {
+      console.error("Failed to retrieve swing settings", settingsError);
+      return new Response(JSON.stringify({ error: "Failed to retrieve settings" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -95,8 +96,8 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    const msg = error instanceof Error ? error.message : "Unknown error";
-    return new Response(JSON.stringify({ error: msg }), {
+    console.error("Unhandled finnhub-quotes error", error);
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
