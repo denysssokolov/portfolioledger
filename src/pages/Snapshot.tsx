@@ -146,16 +146,22 @@ export default function Snapshot() {
                   </div>
                   <div>
                     <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Cash portion</label>
-                    <Input
-                      type="number"
-                      inputMode="decimal"
-                      step="0.01"
-                      value={safe ? "" : v.cash_portion}
-                      disabled={safe}
-                      onChange={(e) => setValues({ ...values, [a.id]: { ...v, cash_portion: e.target.value } })}
-                      placeholder={safe ? "••••" : "0.00"}
-                      className="h-12 rounded-xl bg-secondary border-0 font-display text-lg font-bold tabular"
-                    />
+                    {a.asset_class === "Cash" ? (
+                      <div className="h-12 rounded-xl bg-muted/40 border border-border flex items-center px-3 font-display text-lg font-bold tabular text-muted-foreground">
+                        {safe ? "••••" : (v.amount_now === "" ? "0.00" : Number(v.amount_now || 0).toFixed(2))}
+                      </div>
+                    ) : (
+                      <Input
+                        type="number"
+                        inputMode="decimal"
+                        step="0.01"
+                        value={safe ? "" : v.cash_portion}
+                        disabled={safe}
+                        onChange={(e) => setValues({ ...values, [a.id]: { ...v, cash_portion: e.target.value } })}
+                        placeholder={safe ? "••••" : "0.00"}
+                        className="h-12 rounded-xl bg-secondary border-0 font-display text-lg font-bold tabular"
+                      />
+                    )}
                   </div>
                 </div>
                 {pnl !== null && (
