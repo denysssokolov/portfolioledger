@@ -38,8 +38,10 @@ export default function SwingTrades() {
       .select("*")
       .eq("user_id", user.id)
       .order("entry_date", { ascending: false });
-    if (error) toast.error(error.message);
-    else setTrades(data ?? []);
+    if (error) {
+      console.error("swing_trades fetch error:", error);
+      toast.error("Couldn't load trades. Please try again.");
+    } else setTrades(data ?? []);
     setLoading(false);
   };
 
