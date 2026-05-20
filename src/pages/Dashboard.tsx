@@ -149,7 +149,7 @@ export default function Dashboard() {
       </div>
 
       <div className="px-5 grid grid-cols-4 gap-2 -mt-2">
-        <MiniStat label="Invested" value={fmtMoney(investedTotal)} />
+        <MiniStat label="Invested" value={fmtMoney(Math.max(0, investedTotal - cashPosition))} />
         <MiniStat label="Cash" value={fmtMoney(cashPosition)} />
         <MiniStat label="Unrealised" value={fmtSigned(unrealised)} tone={unrealised >= 0 ? "up" : "down"} />
         <MiniStat
