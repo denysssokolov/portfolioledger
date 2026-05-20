@@ -120,6 +120,25 @@ export default function Snapshot() {
     qc.invalidateQueries({ queryKey: ["snapshots"] });
   };
 
+  const deleteMonth = async (month: string) => {
+    if (!user) return;
+    if (safe) return toast.error("Safety mode is on.");
+    setDeleting(month);
+    const { error } = await supabase
+      .from("snapshots")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("month", month);
+    setDeleting(null);
+    setConfirmDelete(null);
+    if (error) {
+      console.error("Snapshot delete failed:", error);
+      return toast.error("Couldn't delete snapshot. Please try again.");
+    }
+    toast.success(`Deleted ${monthLabel(month)}`);
+    qc.invalidateQueries({ queryKey: ["snapshots"] });
+  };
+
   const openAddPast = () => {
     const fallback = addMonths(startMonth, -1);
     setAddMonth(fallback.slice(0, 7));
