@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { ScreenHeader } from "@/components/ScreenHeader";
-import { AccountsManager } from "@/components/AccountsManager";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -16,7 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Trash2, AlertTriangle } from "lucide-react";
+import { Trash2, AlertTriangle, Wallet, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Settings() {
