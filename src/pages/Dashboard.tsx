@@ -9,7 +9,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
-import { fmtMoney, fmtPct, fmtSigned, monthLabel } from "@/lib/format";
+import { fmtMoney, fmtPct, fmtSigned } from "@/lib/format";
 import {
   investedByAccount, latestSnapshotByAccount, liveBalanceByAccount, netContributions,
   previousMonthISO, totalsForMonth, uniqueMonths,
