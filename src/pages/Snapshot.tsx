@@ -222,7 +222,16 @@ export default function Snapshot() {
                     </>
                   )}
                   {st.kind === "locked" && <Lock className="h-5 w-5 text-muted-foreground" />}
-                  {st.kind === "skipped" && <Lock className="h-5 w-5 text-muted-foreground" />}
+                  {st.kind === "skipped" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => { e.stopPropagation(); navigate(`/snapshot/${m}`); }}
+                      className="rounded-xl"
+                    >
+                      <Pencil className="h-4 w-4 mr-1" /> Edit
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
