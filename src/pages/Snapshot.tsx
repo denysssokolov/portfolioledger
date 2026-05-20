@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { fmtMoney, monthKey, monthLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { Lock, SkipForward, Pencil, Plus } from "lucide-react";
+import { Lock, SkipForward, Pencil, Plus, Trash2 } from "lucide-react";
 import { useSafetyMode } from "@/hooks/useSafetyMode";
 import { isMonthEditable, daysLeftUntilEditable } from "@/lib/snapshotRules";
 
