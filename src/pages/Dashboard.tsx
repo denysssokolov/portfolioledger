@@ -9,7 +9,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
-import { fmtMoney, fmtPct, fmtSigned, monthLabel } from "@/lib/format";
+import { fmtMoney, fmtPct, fmtSigned } from "@/lib/format";
 import {
   investedByAccount, latestSnapshotByAccount, liveBalanceByAccount, netContributions,
   previousMonthISO, totalsForMonth, uniqueMonths,
@@ -123,7 +123,7 @@ export default function Dashboard() {
               ? ", " + user.user_metadata.display_name
               : ""
           }`}
-          subtitle={latestMonth ? monthLabel(latestMonth) : "No snapshots yet"}
+          subtitle={latestMonth ? undefined : "No snapshots yet"}
           right={
             <Button size="icon" variant="ghost" onClick={() => signOut()}
               className="h-10 w-10 rounded-xl text-muted-foreground hover:text-foreground">

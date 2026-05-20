@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { fmtMoney, monthKey, monthLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { Lock, SkipForward, Pencil, Plus } from "lucide-react";
+import { Lock, SkipForward, Pencil, Plus, Trash2 } from "lucide-react";
 import { useSafetyMode } from "@/hooks/useSafetyMode";
 import { isMonthEditable, daysLeftUntilEditable } from "@/lib/snapshotRules";
 
@@ -41,6 +41,8 @@ export default function Snapshot() {
   const { data: txs = [] } = useTransactions();
   const { safe } = useSafetyMode();
   const [skipping, setSkipping] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [addMonth, setAddMonth] = useState("");
 
@@ -115,6 +117,25 @@ export default function Snapshot() {
       return toast.error("Couldn't skip month. Please try again.");
     }
     toast.success(`Skipped ${monthLabel(month)}`);
+    qc.invalidateQueries({ queryKey: ["snapshots"] });
+  };
+
+  const deleteMonth = async (month: string) => {
+    if (!user) return;
+    if (safe) return toast.error("Safety mode is on.");
+    setDeleting(month);
+    const { error } = await supabase
+      .from("snapshots")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("month", month);
+    setDeleting(null);
+    setConfirmDelete(null);
+    if (error) {
+      console.error("Snapshot delete failed:", error);
+      return toast.error("Couldn't delete snapshot. Please try again.");
+    }
+    toast.success(`Deleted ${monthLabel(month)}`);
     qc.invalidateQueries({ queryKey: ["snapshots"] });
   };
 
@@ -196,10 +217,22 @@ export default function Snapshot() {
 
                 <div className="flex items-center gap-2 shrink-0">
                   {st.kind === "filled" && (
-                    <div className="text-right">
-                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Total</div>
-                      <div className="font-display text-xl font-bold tabular">{fmtMoney(st.total)}</div>
-                    </div>
+                    <>
+                      <div className="text-right">
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Total</div>
+                        <div className="font-display text-xl font-bold tabular">{fmtMoney(st.total)}</div>
+                      </div>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        disabled={safe}
+                        onClick={(e) => { e.stopPropagation(); setConfirmDelete(m); }}
+                        className="rounded-xl h-9 w-9 text-muted-foreground hover:text-loss"
+                        aria-label="Delete snapshot"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
                   )}
                   {st.kind === "empty" && (
                     <>
@@ -223,14 +256,26 @@ export default function Snapshot() {
                   )}
                   {st.kind === "locked" && <Lock className="h-5 w-5 text-muted-foreground" />}
                   {st.kind === "skipped" && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={(e) => { e.stopPropagation(); navigate(`/snapshot/${m}`); }}
-                      className="rounded-xl"
-                    >
-                      <Pencil className="h-4 w-4 mr-1" /> Edit
-                    </Button>
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={(e) => { e.stopPropagation(); navigate(`/snapshot/${m}`); }}
+                        className="rounded-xl"
+                      >
+                        <Pencil className="h-4 w-4 mr-1" /> Edit
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        disabled={safe}
+                        onClick={(e) => { e.stopPropagation(); setConfirmDelete(m); }}
+                        className="rounded-xl h-9 w-9 text-muted-foreground hover:text-loss"
+                        aria-label="Delete snapshot"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>
@@ -261,6 +306,35 @@ export default function Snapshot() {
             >
               Open editor
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
+        <DialogContent className="bg-card border-border max-w-sm rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="font-display text-xl">Delete snapshot?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              This permanently removes the snapshot for {confirmDelete ? monthLabel(confirmDelete) : ""}. This can't be undone.
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1 h-11 rounded-xl"
+                onClick={() => setConfirmDelete(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1 h-11 rounded-xl bg-loss text-loss-foreground hover:bg-loss/90"
+                disabled={!!deleting}
+                onClick={() => confirmDelete && deleteMonth(confirmDelete)}
+              >
+                {deleting ? "Deleting..." : "Delete"}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
