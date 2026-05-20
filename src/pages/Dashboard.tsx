@@ -123,7 +123,7 @@ export default function Dashboard() {
               ? ", " + user.user_metadata.display_name
               : ""
           }`}
-          subtitle={latestMonth ? "Your portfolio at a glance" : "No snapshots yet"}
+          subtitle={latestMonth ? undefined : "No snapshots yet"}
           right={
             <Button size="icon" variant="ghost" onClick={() => signOut()}
               className="h-10 w-10 rounded-xl text-muted-foreground hover:text-foreground">
