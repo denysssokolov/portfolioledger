@@ -41,6 +41,8 @@ export default function Snapshot() {
   const { data: txs = [] } = useTransactions();
   const { safe } = useSafetyMode();
   const [skipping, setSkipping] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [addMonth, setAddMonth] = useState("");
 
