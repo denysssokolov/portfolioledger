@@ -309,6 +309,35 @@ export default function Snapshot() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
+        <DialogContent className="bg-card border-border max-w-sm rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="font-display text-xl">Delete snapshot?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              This permanently removes the snapshot for {confirmDelete ? monthLabel(confirmDelete) : ""}. This can't be undone.
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1 h-11 rounded-xl"
+                onClick={() => setConfirmDelete(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1 h-11 rounded-xl bg-loss text-loss-foreground hover:bg-loss/90"
+                disabled={!!deleting}
+                onClick={() => confirmDelete && deleteMonth(confirmDelete)}
+              >
+                {deleting ? "Deleting..." : "Delete"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
