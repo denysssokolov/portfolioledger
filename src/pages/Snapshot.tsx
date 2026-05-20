@@ -44,14 +44,11 @@ export default function Snapshot() {
   const [addOpen, setAddOpen] = useState(false);
   const [addMonth, setAddMonth] = useState("");
 
-  // Registration cutoff = earliest known activity (first transaction or oldest snapshot).
+  // Reference month = earliest snapshot the user has created. Don't surface anything older.
   const startMonth = useMemo(() => {
-    const dates: string[] = [];
-    for (const t of txs) if (t.occurred_on) dates.push(monthKey(new Date(t.occurred_on)));
-    for (const s of snaps) dates.push(s.month);
-    if (dates.length === 0) return monthKey(new Date());
-    return dates.sort()[0];
-  }, [txs, snaps]);
+    if (snaps.length === 0) return monthKey(new Date());
+    return snaps.map((s) => s.month).sort()[0];
+  }, [snaps]);
 
   const months = useMemo(() => {
     const current = monthKey(new Date());
