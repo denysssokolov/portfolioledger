@@ -44,14 +44,11 @@ export default function Snapshot() {
   const [addOpen, setAddOpen] = useState(false);
   const [addMonth, setAddMonth] = useState("");
 
-  // Registration cutoff = earliest known activity (first transaction or oldest snapshot).
+  // Reference month = earliest snapshot the user has created. Don't surface anything older.
   const startMonth = useMemo(() => {
-    const dates: string[] = [];
-    for (const t of txs) if (t.occurred_on) dates.push(monthKey(new Date(t.occurred_on)));
-    for (const s of snaps) dates.push(s.month);
-    if (dates.length === 0) return monthKey(new Date());
-    return dates.sort()[0];
-  }, [txs, snaps]);
+    if (snaps.length === 0) return monthKey(new Date());
+    return snaps.map((s) => s.month).sort()[0];
+  }, [snaps]);
 
   const months = useMemo(() => {
     const current = monthKey(new Date());
@@ -225,7 +222,16 @@ export default function Snapshot() {
                     </>
                   )}
                   {st.kind === "locked" && <Lock className="h-5 w-5 text-muted-foreground" />}
-                  {st.kind === "skipped" && <Lock className="h-5 w-5 text-muted-foreground" />}
+                  {st.kind === "skipped" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => { e.stopPropagation(); navigate(`/snapshot/${m}`); }}
+                      className="rounded-xl"
+                    >
+                      <Pencil className="h-4 w-4 mr-1" /> Edit
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
