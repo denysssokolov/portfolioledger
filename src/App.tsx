@@ -14,11 +14,13 @@ import Transactions from "./pages/Transactions";
 import Snapshot from "./pages/Snapshot";
 import SnapshotEditor from "./pages/SnapshotEditor";
 import Settings from "./pages/Settings";
+import AccountsManagement from "./pages/AccountsManagement";
 import SwingTrades from "./pages/SwingTrades";
 import SwingPnL from "./pages/SwingPnL";
 import SwingSettings from "./pages/SwingSettings";
 import SwingTradesLayout from "./components/SwingTradesLayout";
 import NotFound from "./pages/NotFound.tsx";
+import { ScrollToTop } from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +51,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <ScrollToTop />
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
@@ -72,6 +75,7 @@ const App = () => (
               <Route path="/snapshot" element={<Snapshot />} />
               <Route path="/snapshot/:month" element={<SnapshotEditor />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/settings/accounts" element={<AccountsManagement />} />
             </Route>
             <Route
               element={
