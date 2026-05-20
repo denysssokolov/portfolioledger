@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { ScreenHeader } from "@/components/ScreenHeader";
-import { AccountsManager } from "@/components/AccountsManager";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -16,7 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Trash2, AlertTriangle } from "lucide-react";
+import { Trash2, AlertTriangle, Wallet, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Settings() {
@@ -51,7 +50,27 @@ export default function Settings() {
           <div className="font-medium mt-1 break-all">{user?.email ?? "—"}</div>
         </div>
 
-        <AccountsManager />
+        <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
+          <div className="flex items-start gap-3 mb-4">
+            <div className="h-10 w-10 rounded-xl bg-secondary flex items-center justify-center shrink-0 text-primary">
+              <Wallet className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="font-semibold">Investing accounts</div>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Add, edit, and remove the accounts in your portfolio.
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => nav("/settings/accounts")}
+            className="w-full h-12 rounded-xl justify-between"
+          >
+            <span>Manage accounts</span>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
 
         <div className="rounded-2xl border border-loss/30 bg-card p-5 shadow-card">
           <div className="flex items-start gap-3 mb-4">
