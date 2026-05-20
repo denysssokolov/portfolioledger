@@ -217,10 +217,22 @@ export default function Snapshot() {
 
                 <div className="flex items-center gap-2 shrink-0">
                   {st.kind === "filled" && (
-                    <div className="text-right">
-                      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Total</div>
-                      <div className="font-display text-xl font-bold tabular">{fmtMoney(st.total)}</div>
-                    </div>
+                    <>
+                      <div className="text-right">
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Total</div>
+                        <div className="font-display text-xl font-bold tabular">{fmtMoney(st.total)}</div>
+                      </div>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        disabled={safe}
+                        onClick={(e) => { e.stopPropagation(); setConfirmDelete(m); }}
+                        className="rounded-xl h-9 w-9 text-muted-foreground hover:text-loss"
+                        aria-label="Delete snapshot"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
                   )}
                   {st.kind === "empty" && (
                     <>
@@ -244,14 +256,26 @@ export default function Snapshot() {
                   )}
                   {st.kind === "locked" && <Lock className="h-5 w-5 text-muted-foreground" />}
                   {st.kind === "skipped" && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={(e) => { e.stopPropagation(); navigate(`/snapshot/${m}`); }}
-                      className="rounded-xl"
-                    >
-                      <Pencil className="h-4 w-4 mr-1" /> Edit
-                    </Button>
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={(e) => { e.stopPropagation(); navigate(`/snapshot/${m}`); }}
+                        className="rounded-xl"
+                      >
+                        <Pencil className="h-4 w-4 mr-1" /> Edit
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        disabled={safe}
+                        onClick={(e) => { e.stopPropagation(); setConfirmDelete(m); }}
+                        className="rounded-xl h-9 w-9 text-muted-foreground hover:text-loss"
+                        aria-label="Delete snapshot"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>
