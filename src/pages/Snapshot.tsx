@@ -3,13 +3,21 @@ import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useAccounts, useSnapshots } from "@/hooks/usePortfolioData";
+import { useAccounts, useSnapshots, useTransactions } from "@/hooks/usePortfolioData";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { fmtMoney, monthKey, monthLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { Lock, SkipForward, Pencil } from "lucide-react";
+import { Lock, SkipForward, Pencil, Plus } from "lucide-react";
 import { useSafetyMode } from "@/hooks/useSafetyMode";
 import { isMonthEditable, daysLeftUntilEditable } from "@/lib/snapshotRules";
 
@@ -18,9 +26,6 @@ type MonthState =
   | { kind: "skipped" }
   | { kind: "locked"; daysLeft: number }
   | { kind: "empty" };
-
-const FUTURE_MONTHS_AHEAD = 3;
-const PAST_MONTHS_BACK = 11;
 
 function addMonths(iso: string, delta: number): string {
   const d = new Date(iso);
@@ -33,16 +38,39 @@ export default function Snapshot() {
   const qc = useQueryClient();
   const { data: accounts = [] } = useAccounts();
   const { data: snaps = [] } = useSnapshots();
+  const { data: txs = [] } = useTransactions();
   const { safe } = useSafetyMode();
   const [skipping, setSkipping] = useState<string | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const [addMonth, setAddMonth] = useState("");
+
+  // Registration cutoff = earliest known activity (first transaction or oldest snapshot).
+  const startMonth = useMemo(() => {
+    const dates: string[] = [];
+    for (const t of txs) if (t.occurred_on) dates.push(monthKey(new Date(t.occurred_on)));
+    for (const s of snaps) dates.push(s.month);
+    if (dates.length === 0) return monthKey(new Date());
+    return dates.sort()[0];
+  }, [txs, snaps]);
 
   const months = useMemo(() => {
     const current = monthKey(new Date());
+    const nextLocked = addMonths(current, 1); // only one future month
     const set = new Set<string>();
-    for (let i = -PAST_MONTHS_BACK; i <= FUTURE_MONTHS_AHEAD; i++) set.add(addMonths(current, i));
-    for (const s of snaps) set.add(s.month);
+    set.add(current);
+    set.add(nextLocked);
+    // Past months from startMonth up to current
+    let cursor = startMonth;
+    while (cursor <= current) {
+      set.add(cursor);
+      cursor = addMonths(cursor, 1);
+    }
+    // Always include months we already have snapshots for (e.g. manually added past).
+    for (const s of snaps) {
+      if (s.month >= startMonth) set.add(s.month);
+    }
     return Array.from(set).sort().reverse(); // latest on top
-  }, [snaps]);
+  }, [snaps, startMonth]);
 
   const stateByMonth = useMemo(() => {
     const map: Record<string, MonthState> = {};
@@ -93,11 +121,31 @@ export default function Snapshot() {
     qc.invalidateQueries({ queryKey: ["snapshots"] });
   };
 
+  const openAddPast = () => {
+    const fallback = addMonths(startMonth, -1);
+    setAddMonth(fallback.slice(0, 7));
+    setAddOpen(true);
+  };
+
+  const confirmAddPast = () => {
+    if (!addMonth) return toast.error("Pick a month");
+    const iso = `${addMonth}-01`;
+    const current = monthKey(new Date());
+    if (iso > current) return toast.error("Pick a past or current month");
+    setAddOpen(false);
+    navigate(`/snapshot/${iso}`);
+  };
+
   return (
     <>
       <ScreenHeader
         title="Snapshot"
         subtitle="Monthly balances, newest on top."
+        right={
+          <Button size="sm" variant="ghost" onClick={openAddPast} className="gap-1">
+            <Plus className="h-4 w-4" /> Add past
+          </Button>
+        }
       />
 
       <div className="px-5 space-y-2 pb-8">
@@ -184,6 +232,32 @@ export default function Snapshot() {
           );
         })}
       </div>
+
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="bg-card border-border max-w-sm rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="font-display text-xl">Add past snapshot</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Month</Label>
+              <Input
+                type="month"
+                value={addMonth}
+                onChange={(e) => setAddMonth(e.target.value)}
+                max={monthKey(new Date()).slice(0, 7)}
+                className="h-11 rounded-xl bg-secondary border-0"
+              />
+            </div>
+            <Button
+              onClick={confirmAddPast}
+              className="w-full h-12 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-elegant"
+            >
+              Open editor
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
