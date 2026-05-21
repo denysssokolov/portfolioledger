@@ -12,12 +12,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { fmtMoney, monthKey, monthLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { Lock, SkipForward, Pencil, Plus, Trash2 } from "lucide-react";
+import { Lock, SkipForward, Pencil, Trash2 } from "lucide-react";
 import { useSafetyMode } from "@/hooks/useSafetyMode";
 import { isMonthEditable, daysLeftUntilEditable } from "@/lib/snapshotRules";
 
@@ -43,8 +41,6 @@ export default function Snapshot() {
   const [skipping, setSkipping] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-  const [addOpen, setAddOpen] = useState(false);
-  const [addMonth, setAddMonth] = useState("");
 
   // Reference month = earliest snapshot the user has created. Don't surface anything older.
   const startMonth = useMemo(() => {
@@ -139,32 +135,13 @@ export default function Snapshot() {
     qc.invalidateQueries({ queryKey: ["snapshots"] });
   };
 
-  const openAddPast = () => {
-    const fallback = addMonths(startMonth, -1);
-    setAddMonth(fallback.slice(0, 7));
-    setAddOpen(true);
-  };
-
-  const confirmAddPast = () => {
-    if (!addMonth) return toast.error("Pick a month");
-    const iso = `${addMonth}-01`;
-    const current = monthKey(new Date());
-    if (iso > current) return toast.error("Pick a past or current month");
-    setAddOpen(false);
-    navigate(`/snapshot/${iso}`);
-  };
-
   return (
     <>
       <ScreenHeader
         title="Snapshot"
         subtitle="Monthly balances, newest on top."
-        right={
-          <Button size="sm" variant="ghost" onClick={openAddPast} className="gap-1">
-            <Plus className="h-4 w-4" /> Add past
-          </Button>
-        }
       />
+
 
       <div className="px-5 space-y-2 pb-8">
         {months.map((m) => {
@@ -284,31 +261,6 @@ export default function Snapshot() {
         })}
       </div>
 
-      <Dialog open={addOpen} onOpenChange={setAddOpen}>
-        <DialogContent className="bg-card border-border max-w-sm rounded-3xl">
-          <DialogHeader>
-            <DialogTitle className="font-display text-xl">Add past snapshot</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Month</Label>
-              <Input
-                type="month"
-                value={addMonth}
-                onChange={(e) => setAddMonth(e.target.value)}
-                max={monthKey(new Date()).slice(0, 7)}
-                className="h-11 rounded-xl bg-secondary border-0"
-              />
-            </div>
-            <Button
-              onClick={confirmAddPast}
-              className="w-full h-12 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-elegant"
-            >
-              Open editor
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       <Dialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
         <DialogContent className="bg-card border-border max-w-sm rounded-3xl">
