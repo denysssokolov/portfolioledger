@@ -12,8 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { fmtMoney, monthKey, monthLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
