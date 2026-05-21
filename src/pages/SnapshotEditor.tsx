@@ -66,20 +66,41 @@ export default function SnapshotEditor() {
     if (!user) return;
     if (safe) return toast.error("Safety mode is on. Disable it to save.");
     if (!editable) return toast.error("This month isn't open for snapshots yet.");
-    const rows = accounts
+    const cur = snaps.filter((s) => s.month === month);
+    const candidates = accounts
       .filter((a) => values[a.id]?.amount_now !== "")
       .map((a) => {
         const amt = Number(values[a.id].amount_now || 0);
         return {
-          user_id: user.id,
-          account_id: a.id,
-          month,
-          amount_now: amt,
-          cash_portion: a.asset_class === "Cash" ? amt : Number(values[a.id].cash_portion || 0),
-          skipped: false,
+          account: a,
+          row: {
+            user_id: user.id,
+            account_id: a.id,
+            month,
+            amount_now: amt,
+            cash_portion: a.asset_class === "Cash" ? amt : Number(values[a.id].cash_portion || 0),
+            skipped: false,
+          },
         };
       });
-    if (rows.length === 0) return toast.error("Enter at least one balance");
+    if (candidates.length === 0) return toast.error("Enter at least one balance");
+    // Only keep rows that differ from what's stored, so updated_at (filled date) stays put when nothing changed.
+    const rows = candidates
+      .filter(({ row }) => {
+        const existing = cur.find((s) => s.account_id === row.account_id);
+        if (!existing) return true;
+        if (existing.skipped) return true;
+        return (
+          Number(existing.amount_now) !== row.amount_now ||
+          Number(existing.cash_portion) !== row.cash_portion
+        );
+      })
+      .map(({ row }) => row);
+    if (rows.length === 0) {
+      toast.success("No changes");
+      navigate("/snapshot");
+      return;
+    }
     const { error } = await supabase
       .from("snapshots")
       .upsert(rows, { onConflict: "user_id,account_id,month" });
@@ -91,6 +112,7 @@ export default function SnapshotEditor() {
     qc.invalidateQueries({ queryKey: ["snapshots"] });
     navigate("/snapshot");
   };
+
 
   const total = accounts.reduce((a, x) => a + (Number(values[x.id]?.amount_now) || 0), 0);
 
