@@ -2,6 +2,7 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { BarChart3, LineChart, Settings as SettingsIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ServiceSwitcher } from "@/components/ServiceSwitcher";
+import { SafetyModeToggle } from "@/components/SafetyModeToggle";
 
 const tabs = [
   { to: "/swing-trades", label: "Trades", icon: BarChart3, end: true },
