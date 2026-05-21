@@ -263,31 +263,6 @@ export default function Snapshot() {
         })}
       </div>
 
-      <Dialog open={addOpen} onOpenChange={setAddOpen}>
-        <DialogContent className="bg-card border-border max-w-sm rounded-3xl">
-          <DialogHeader>
-            <DialogTitle className="font-display text-xl">Add past snapshot</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Month</Label>
-              <Input
-                type="month"
-                value={addMonth}
-                onChange={(e) => setAddMonth(e.target.value)}
-                max={monthKey(new Date()).slice(0, 7)}
-                className="h-11 rounded-xl bg-secondary border-0"
-              />
-            </div>
-            <Button
-              onClick={confirmAddPast}
-              className="w-full h-12 rounded-xl bg-gradient-primary text-primary-foreground font-semibold shadow-elegant"
-            >
-              Open editor
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       <Dialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
         <DialogContent className="bg-card border-border max-w-sm rounded-3xl">
