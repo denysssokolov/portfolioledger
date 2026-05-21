@@ -14,6 +14,7 @@ const SwingTradesLayout = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <ServiceSwitcher />
+      <SafetyModeToggle />
       <main className="mx-auto max-w-2xl pb-28">
         <Outlet />
       </main>
