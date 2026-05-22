@@ -17,6 +17,7 @@ import Settings from "./pages/Settings";
 import AccountsManagement from "./pages/AccountsManagement";
 import SwingTrades from "./pages/SwingTrades";
 import SwingPnL from "./pages/SwingPnL";
+import SwingData from "./pages/SwingData";
 import SwingSettings from "./pages/SwingSettings";
 import SwingTradesLayout from "./components/SwingTradesLayout";
 import NotFound from "./pages/NotFound.tsx";
@@ -86,6 +87,7 @@ const App = () => (
             >
               <Route path="/swing-trades" element={<SwingTrades />} />
               <Route path="/swing-trades/pnl" element={<SwingPnL />} />
+              <Route path="/swing-trades/data" element={<SwingData />} />
               <Route path="/swing-trades/settings" element={<SwingSettings />} />
             </Route>
             <Route path="*" element={<NotFound />} />

@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { BarChart3, LineChart, Settings as SettingsIcon } from "lucide-react";
+import { BarChart3, LineChart, Database, Settings as SettingsIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ServiceSwitcher } from "@/components/ServiceSwitcher";
 import { SafetyModeToggle } from "@/components/SafetyModeToggle";
@@ -7,6 +7,7 @@ import { SafetyModeToggle } from "@/components/SafetyModeToggle";
 const tabs = [
   { to: "/swing-trades", label: "Trades", icon: BarChart3, end: true },
   { to: "/swing-trades/pnl", label: "PnL", icon: LineChart },
+  { to: "/swing-trades/data", label: "Data", icon: Database },
   { to: "/swing-trades/settings", label: "Settings", icon: SettingsIcon },
 ];
 
@@ -22,7 +23,7 @@ const SwingTradesLayout = () => {
         className="fixed bottom-0 inset-x-0 z-40 glass border-t border-border safe-bottom"
         aria-label="Primary"
       >
-        <div className="mx-auto max-w-2xl grid grid-cols-3 px-2 pt-2">
+        <div className="mx-auto max-w-2xl grid grid-cols-4 px-2 pt-2">
           {tabs.map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}
