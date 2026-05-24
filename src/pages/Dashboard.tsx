@@ -69,6 +69,28 @@ export default function Dashboard() {
     return ((cur - prev - net) / prev) * 100;
   }, [latestMonth, prevMonth, snaps, txs]);
 
+  // Snapshot reminder: when current month is editable (last 3 days) and no snapshot
+  // recorded yet for this month, show a one-per-day toast.
+  useEffect(() => {
+    if (!user || snapshotToastedRef.current) return;
+    const current = monthKey(new Date());
+    if (!isMonthEditable(current)) return;
+    const hasThisMonth = snaps.some(
+      (s) => s.month === current && !s.skipped
+    );
+    if (hasThisMonth) return;
+    const today = new Date().toISOString().slice(0, 10);
+    const key = `snapshotReminder:${user.id}:${today}`;
+    if (localStorage.getItem(key)) return;
+    localStorage.setItem(key, "1");
+    snapshotToastedRef.current = true;
+    toast("Time to record this month's snapshot", {
+      description: "End of month is here — capture your account balances.",
+      action: { label: "Open", onClick: () => navigate("/snapshot") },
+      duration: 8000,
+    });
+  }, [user, snaps, navigate]);
+
   // Growth chart series
   const growth = useMemo(
     () => months.map((m) => ({
