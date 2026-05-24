@@ -13,7 +13,7 @@ export const SafetyModeToggle = () => {
       aria-label={safe ? "Disable safety mode" : "Enable safety mode"}
       title={safe ? "Safety mode on — tap to reveal" : "Safety mode off — tap to hide"}
       className={cn(
-        "fixed top-14 right-4 z-50 h-11 w-11 rounded-full border border-border shadow-card backdrop-blur",
+        "fixed top-20 right-4 z-50 h-11 w-11 rounded-full border border-border shadow-card backdrop-blur",
         safe
           ? "bg-primary/15 text-primary hover:bg-primary/25"
           : "bg-card/80 text-muted-foreground hover:text-foreground"

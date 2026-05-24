@@ -33,6 +33,17 @@ export const fmtPct = (n: number, digits = 1) => {
   return (n >= 0 ? "+" : "−") + Math.abs(n).toFixed(digits) + "%";
 };
 
+// USD helpers for swing trades — also respect safety mode
+export const fmtUsd = (n: number, digits = 2) => {
+  if (isHidden()) return MASK;
+  return `$${n.toFixed(digits)}`;
+};
+
+export const fmtUsdSigned = (n: number, digits = 2) => {
+  if (isHidden()) return MASK;
+  return `${n >= 0 ? "+" : "-"}$${Math.abs(n).toFixed(digits)}`;
+};
+
 export const monthKey = (d: Date) =>
   new Date(Date.UTC(d.getFullYear(), d.getMonth(), 1)).toISOString().slice(0, 10);
 
