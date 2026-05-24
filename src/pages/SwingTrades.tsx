@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import type { Trade, Quote } from "@/lib/tradeStats";
 import { pnlOf, pnlPctOf } from "@/lib/tradeStats";
+import { fmtUsdSigned } from "@/lib/format";
 
 export default function SwingTrades() {
   const { user, session } = useAuth();
@@ -79,6 +80,37 @@ export default function SwingTrades() {
     const interval = setInterval(fetchQuotes, 15000);
     return () => clearInterval(interval);
   }, [fetchQuotes, trades]);
+
+  // First-trade-of-day notification: when user opens this page on a new calendar day,
+  // show current PnL level and the change since yesterday's stored level.
+  const dailyNotifiedRef = useMemo(() => ({ done: false }), []);
+  useEffect(() => {
+    if (!user || trades.length === 0 || dailyNotifiedRef.done) return;
+    if (Object.keys(quotes).length === 0 && trades.some((t) => t.status === "active")) return;
+
+    const today = format(new Date(), "yyyy-MM-dd");
+    const lastKey = `swing:lastDay:${user.id}`;
+    const pnlKey = `swing:lastTotalPnl:${user.id}`;
+    const last = localStorage.getItem(lastKey);
+    const currentTotalPnl = trades.reduce(
+      (s, t) => s + (pnlOf(t, quotes[t.ticker] ?? null) ?? 0),
+      0
+    );
+
+    if (last !== today) {
+      const prevStr = localStorage.getItem(pnlKey);
+      const prev = prevStr != null ? Number(prevStr) : null;
+      const diff = prev != null ? currentTotalPnl - prev : null;
+      toast(
+        `Good to see you! Total PnL: ${fmtUsdSigned(currentTotalPnl)}` +
+          (diff != null ? ` · since yesterday ${fmtUsdSigned(diff)}` : ""),
+        { duration: 6000 }
+      );
+      localStorage.setItem(lastKey, today);
+      localStorage.setItem(pnlKey, String(currentTotalPnl));
+      dailyNotifiedRef.done = true;
+    }
+  }, [user, trades, quotes, dailyNotifiedRef]);
 
   const monthOptions = useMemo(() => {
     const set = new Set<string>();
@@ -177,7 +209,7 @@ export default function SwingTrades() {
                           pnl >= 0 ? "text-emerald-400" : "text-red-400"
                         )}
                       >
-                        {pnl >= 0 ? "+" : ""}${pnl.toFixed(2)}{" "}
+                        {fmtUsdSigned(pnl)}{" "}
                         <span className="text-xs font-normal">
                           ({pnlPct! >= 0 ? "+" : ""}
                           {pnlPct!.toFixed(1)}%)

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer,
   Tooltip, XAxis, YAxis,
@@ -9,7 +9,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Button } from "@/components/ui/button";
-import { fmtMoney, fmtPct, fmtSigned } from "@/lib/format";
+import { fmtMoney, fmtPct, fmtSigned, monthKey } from "@/lib/format";
 import {
   investedByAccount, latestSnapshotByAccount, liveBalanceByAccount, netContributions,
   previousMonthISO, totalsForMonth, uniqueMonths,
@@ -19,6 +19,8 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import TransactionForm from "@/components/TransactionForm";
 import { useSafetyMode } from "@/hooks/useSafetyMode";
+import { isMonthEditable } from "@/lib/snapshotRules";
+import { toast } from "sonner";
 
 const ASSET_COLORS: Record<string, string> = {
   Cash: "hsl(215 14% 65%)",
@@ -36,6 +38,7 @@ export default function Dashboard() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   useSafetyMode(); // re-render when safety mode toggles
+  const snapshotToastedRef = useRef(false);
 
   const months = useMemo(() => uniqueMonths(snaps), [snaps]);
   const latestMonth = months[months.length - 1];
@@ -65,6 +68,28 @@ export default function Dashboard() {
     const net = netContributions(txs, latestMonth);
     return ((cur - prev - net) / prev) * 100;
   }, [latestMonth, prevMonth, snaps, txs]);
+
+  // Snapshot reminder: when current month is editable (last 3 days) and no snapshot
+  // recorded yet for this month, show a one-per-day toast.
+  useEffect(() => {
+    if (!user || snapshotToastedRef.current) return;
+    const current = monthKey(new Date());
+    if (!isMonthEditable(current)) return;
+    const hasThisMonth = snaps.some(
+      (s) => s.month === current && !s.skipped
+    );
+    if (hasThisMonth) return;
+    const today = new Date().toISOString().slice(0, 10);
+    const key = `snapshotReminder:${user.id}:${today}`;
+    if (localStorage.getItem(key)) return;
+    localStorage.setItem(key, "1");
+    snapshotToastedRef.current = true;
+    toast("Time to record this month's snapshot", {
+      description: "End of month is here — capture your account balances.",
+      action: { label: "Open", onClick: () => navigate("/snapshot") },
+      duration: 8000,
+    });
+  }, [user, snaps, navigate]);
 
   // Growth chart series
   const growth = useMemo(

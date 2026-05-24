@@ -35,13 +35,21 @@ export const pnlPctOf = (t: Trade, q: Quote): number | null => {
   return (p / t.capital_invested) * 100;
 };
 
-export const riskAtStop = (t: Trade): number | null => {
+/**
+ * Signed P&L if the stop-loss were hit.
+ * If SL is on the profitable side of entry (e.g. trailing stop above entry on a long),
+ * this returns a POSITIVE number — i.e. SL acts as a take-profit.
+ */
+export const pnlAtStop = (t: Trade): number | null => {
   if (t.stop_loss == null) return null;
   const sh = sharesOf(t);
   return t.direction === "long"
-    ? (t.entry_price - t.stop_loss) * sh
-    : (t.stop_loss - t.entry_price) * sh;
+    ? (t.stop_loss - t.entry_price) * sh
+    : (t.entry_price - t.stop_loss) * sh;
 };
+
+/** Back-compat alias — returns signed P&L at SL */
+export const riskAtStop = pnlAtStop;
 
 export type Stats = {
   totalPnl: number;
@@ -51,11 +59,18 @@ export type Stats = {
   avgLoss: number;
   avgWinPct: number;
   avgLossPct: number;
+  avgPositionSize: number;
+  avgWinPositionSize: number;
+  avgLossPositionSize: number;
+  avgWinOpen: number;
+  avgLossOpen: number;
+  avgWinClosed: number;
+  avgLossClosed: number;
   winRateOpen: number;
   winRateClosed: number;
   rrOpen: number;
   rrClosed: number;
-  totalRiskOpen: number;
+  netIfAllSlHit: number;
   numTrades: number;
   numOpen: number;
   numClosed: number;
@@ -76,20 +91,25 @@ export function computeStats(
   const closedPnls = closed.map((t) => pnlOf(t, null) ?? 0);
 
   const sum = (a: number[]) => a.reduce((s, v) => s + v, 0);
+  const avg = (a: number[]) => (a.length ? sum(a) / a.length : 0);
   const openPnl = sum(openPnls);
   const closedPnl = sum(closedPnls);
 
-  const allPnls = [
-    ...open.map((t, i) => ({ t, p: openPnls[i] })),
-    ...closed.map((t, i) => ({ t, p: closedPnls[i] })),
-  ];
-  const wins = allPnls.filter((x) => x.p > 0);
-  const losses = allPnls.filter((x) => x.p < 0);
+  const openPairs = open.map((t, i) => ({ t, p: openPnls[i] }));
+  const closedPairs = closed.map((t, i) => ({ t, p: closedPnls[i] }));
+  const allPairs = [...openPairs, ...closedPairs];
 
-  const avgWin = wins.length ? sum(wins.map((x) => x.p)) / wins.length : 0;
-  const avgLoss = losses.length ? sum(losses.map((x) => x.p)) / losses.length : 0;
+  const wins = allPairs.filter((x) => x.p > 0);
+  const losses = allPairs.filter((x) => x.p < 0);
+
+  const avgWin = avg(wins.map((x) => x.p));
+  const avgLoss = avg(losses.map((x) => x.p));
   const avgWinPct = equity > 0 ? (avgWin / equity) * 100 : 0;
   const avgLossPct = equity > 0 ? (avgLoss / equity) * 100 : 0;
+
+  const avgPositionSize = avg(trades.map((t) => t.capital_invested));
+  const avgWinPositionSize = avg(wins.map((x) => x.t.capital_invested));
+  const avgLossPositionSize = avg(losses.map((x) => x.t.capital_invested));
 
   const winRateOpen = open.length
     ? (openPnls.filter((p) => p > 0).length / open.length) * 100
@@ -98,18 +118,24 @@ export function computeStats(
     ? (closedPnls.filter((p) => p > 0).length / closed.length) * 100
     : 0;
 
+  const avgWinOpen = avg(openPairs.filter((x) => x.p > 0).map((x) => x.p));
+  const avgLossOpen = avg(openPairs.filter((x) => x.p < 0).map((x) => x.p));
+  const avgWinClosed = avg(closedPairs.filter((x) => x.p > 0).map((x) => x.p));
+  const avgLossClosed = avg(closedPairs.filter((x) => x.p < 0).map((x) => x.p));
+
   const rrFor = (subset: { t: Trade; p: number }[]) => {
     const w = subset.filter((x) => x.p > 0).map((x) => x.p);
     const l = subset.filter((x) => x.p < 0).map((x) => Math.abs(x.p));
     if (!w.length || !l.length) return 0;
     return sum(w) / w.length / (sum(l) / l.length);
   };
-  const rrOpen = rrFor(open.map((t, i) => ({ t, p: openPnls[i] })));
-  const rrClosed = rrFor(closed.map((t, i) => ({ t, p: closedPnls[i] })));
+  const rrOpen = rrFor(openPairs);
+  const rrClosed = rrFor(closedPairs);
 
-  const totalRiskOpen = sum(open.map((t) => riskAtStop(t) ?? 0));
+  // Signed net result if every open stop-loss were hit (SL above entry on longs adds profit)
+  const netIfAllSlHit = sum(open.map((t) => pnlAtStop(t) ?? 0));
 
-  // Sharpe on closed trade returns (pnl / capital)
+  // Sharpe on closed trade returns
   const returns = closed.map((t, i) => closedPnls[i] / t.capital_invested);
   let sharpe = 0;
   if (returns.length > 1) {
@@ -122,11 +148,10 @@ export function computeStats(
 
   const totalWins = sum(wins.map((x) => x.p));
   const totalLosses = Math.abs(sum(losses.map((x) => x.p)));
-  const winRateAll = allPnls.length
-    ? wins.length / allPnls.length
-    : 0;
+  const winRateAll = allPairs.length ? wins.length / allPairs.length : 0;
   const expectancy = winRateAll * avgWin + (1 - winRateAll) * avgLoss;
-  const profitFactor = totalLosses > 0 ? totalWins / totalLosses : totalWins > 0 ? Infinity : 0;
+  const profitFactor =
+    totalLosses > 0 ? totalWins / totalLosses : totalWins > 0 ? Infinity : 0;
 
   return {
     totalPnl: openPnl + closedPnl,
@@ -136,11 +161,18 @@ export function computeStats(
     avgLoss,
     avgWinPct,
     avgLossPct,
+    avgPositionSize,
+    avgWinPositionSize,
+    avgLossPositionSize,
+    avgWinOpen,
+    avgLossOpen,
+    avgWinClosed,
+    avgLossClosed,
     winRateOpen,
     winRateClosed,
     rrOpen,
     rrClosed,
-    totalRiskOpen,
+    netIfAllSlHit,
     numTrades: trades.length,
     numOpen: open.length,
     numClosed: closed.length,
