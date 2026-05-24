@@ -38,6 +38,7 @@ export default function Dashboard() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   useSafetyMode(); // re-render when safety mode toggles
+  const snapshotToastedRef = useRef(false);
 
   const months = useMemo(() => uniqueMonths(snaps), [snaps]);
   const latestMonth = months[months.length - 1];
