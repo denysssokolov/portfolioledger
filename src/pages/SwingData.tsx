@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import type { Trade, Quote } from "@/lib/tradeStats";
 import { computeStats } from "@/lib/tradeStats";
+import { fmtUsd, fmtUsdSigned } from "@/lib/format";
 
 const Stat = ({
   label,
@@ -31,8 +32,6 @@ const Stat = ({
   </div>
 );
 
-const fmt = (n: number, prefix = "$") =>
-  `${n < 0 ? "-" : ""}${prefix}${Math.abs(n).toFixed(2)}`;
 const fmtPct = (n: number) => `${n.toFixed(1)}%`;
 
 export default function SwingData() {
@@ -89,19 +88,30 @@ export default function SwingData() {
             Profit & Loss
           </h3>
           <div className="grid grid-cols-3 gap-2">
-            <Stat label="Total PnL" value={fmt(s.totalPnl)} tone={s.totalPnl >= 0 ? "good" : "bad"} />
-            <Stat label="Open PnL" value={fmt(s.openPnl)} tone={s.openPnl >= 0 ? "good" : "bad"} />
-            <Stat label="Closed PnL" value={fmt(s.closedPnl)} tone={s.closedPnl >= 0 ? "good" : "bad"} />
+            <Stat label="Total PnL" value={fmtUsdSigned(s.totalPnl)} tone={s.totalPnl >= 0 ? "good" : "bad"} />
+            <Stat label="Open PnL" value={fmtUsdSigned(s.openPnl)} tone={s.openPnl >= 0 ? "good" : "bad"} />
+            <Stat label="Closed PnL" value={fmtUsdSigned(s.closedPnl)} tone={s.closedPnl >= 0 ? "good" : "bad"} />
           </div>
         </section>
 
         <section>
           <h3 className="text-xs uppercase tracking-wide text-muted-foreground mb-2">
-            Averages
+            Average position size
+          </h3>
+          <div className="grid grid-cols-3 gap-2">
+            <Stat label="All trades" value={fmtUsd(s.avgPositionSize)} />
+            <Stat label="Winners" value={fmtUsd(s.avgWinPositionSize)} tone="good" />
+            <Stat label="Losers" value={fmtUsd(s.avgLossPositionSize)} tone="bad" />
+          </div>
+        </section>
+
+        <section>
+          <h3 className="text-xs uppercase tracking-wide text-muted-foreground mb-2">
+            Average win / loss (all)
           </h3>
           <div className="grid grid-cols-2 gap-2">
-            <Stat label="Avg Win" value={fmt(s.avgWin)} tone="good" />
-            <Stat label="Avg Loss" value={fmt(s.avgLoss)} tone="bad" />
+            <Stat label="Avg Win" value={fmtUsd(s.avgWin)} tone="good" />
+            <Stat label="Avg Loss" value={fmtUsd(s.avgLoss)} tone="bad" />
             <Stat label="Avg Win % Equity" value={fmtPct(s.avgWinPct)} tone="good" />
             <Stat label="Avg Loss % Equity" value={fmtPct(s.avgLossPct)} tone="bad" />
           </div>
@@ -109,13 +119,25 @@ export default function SwingData() {
 
         <section>
           <h3 className="text-xs uppercase tracking-wide text-muted-foreground mb-2">
-            Win rate & R:R
+            Open positions
           </h3>
           <div className="grid grid-cols-2 gap-2">
-            <Stat label="Win Rate Open" value={fmtPct(s.winRateOpen)} />
-            <Stat label="Win Rate Closed" value={fmtPct(s.winRateClosed)} />
-            <Stat label="R:R Open" value={s.rrOpen.toFixed(2)} />
-            <Stat label="R:R Closed" value={s.rrClosed.toFixed(2)} />
+            <Stat label="Avg Winner" value={fmtUsd(s.avgWinOpen)} tone="good" />
+            <Stat label="Avg Loser" value={fmtUsd(s.avgLossOpen)} tone="bad" />
+            <Stat label="Win Rate" value={fmtPct(s.winRateOpen)} />
+            <Stat label="R:R" value={s.rrOpen.toFixed(2)} />
+          </div>
+        </section>
+
+        <section>
+          <h3 className="text-xs uppercase tracking-wide text-muted-foreground mb-2">
+            Closed positions
+          </h3>
+          <div className="grid grid-cols-2 gap-2">
+            <Stat label="Avg Winner" value={fmtUsd(s.avgWinClosed)} tone="good" />
+            <Stat label="Avg Loser" value={fmtUsd(s.avgLossClosed)} tone="bad" />
+            <Stat label="Win Rate" value={fmtPct(s.winRateClosed)} />
+            <Stat label="R:R" value={s.rrClosed.toFixed(2)} />
           </div>
         </section>
 
@@ -125,9 +147,9 @@ export default function SwingData() {
           </h3>
           <div className="grid grid-cols-2 gap-2">
             <Stat
-              label="Total Loss if All SL Hit"
-              value={fmt(-s.totalRiskOpen)}
-              tone="bad"
+              label="Net if All SL Hit"
+              value={fmtUsdSigned(s.netIfAllSlHit)}
+              tone={s.netIfAllSlHit >= 0 ? "good" : "bad"}
             />
             <Stat label="Trades" value={String(s.numTrades)} />
             <Stat label="Open" value={String(s.numOpen)} />
@@ -143,7 +165,7 @@ export default function SwingData() {
             <Stat label="Sharpe" value={s.sharpe.toFixed(2)} />
             <Stat
               label="Expectancy"
-              value={fmt(s.expectancy)}
+              value={fmtUsdSigned(s.expectancy)}
               tone={s.expectancy >= 0 ? "good" : "bad"}
             />
             <Stat
