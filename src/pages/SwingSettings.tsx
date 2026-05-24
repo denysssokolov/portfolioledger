@@ -106,23 +106,10 @@ export default function SwingSettings() {
               onChange={(e) => setAccountSize(e.target.value)}
               placeholder="10000"
             />
-          </div>
-
-          <div>
-            <Label className="text-xs text-muted-foreground mb-1.5 block">
-              Preferred Risk per Trade (%)
-            </Label>
-            <Input
-              type="number"
-              value={riskPct}
-              onChange={(e) => setRiskPct(e.target.value)}
-              placeholder="1"
-            />
-          </div>
         </div>
 
         {/* Finnhub API key */}
-        <div className="rounded-2xl bg-card border border-border p-5 space-y-4">
+        <div className="rounded-2xl bg-card border border-border p-5 space-y-4 mt-6">
           <h3 className="text-sm font-semibold text-foreground">Finnhub API</h3>
           <div>
             <Label className="text-xs text-muted-foreground mb-1.5 block">API Key</Label>
@@ -133,6 +120,8 @@ export default function SwingSettings() {
                 onChange={(e) => setApiKey(e.target.value)}
                 placeholder="Your Finnhub API key"
                 className="pr-10"
+                autoComplete="new-password"
+                name="finnhub_api_key_field"
               />
               <button
                 type="button"
@@ -157,13 +146,16 @@ export default function SwingSettings() {
         </div>
 
         <Button
+          type="button"
           onClick={handleSave}
           disabled={saving}
-          className="w-full rounded-xl"
+          className="w-full rounded-xl mt-6"
         >
           {saving ? "Saving…" : "Save Settings"}
         </Button>
+        </form>
       </div>
     </>
   );
 }
+
