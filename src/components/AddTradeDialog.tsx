@@ -126,7 +126,7 @@ export function AddTradeDialog({ open, onOpenChange, onSaved, trade, defaultTick
   );
 
   const persistTrade = useCallback(
-    async (payload: Record<string, unknown>) => {
+    async (payload: any) => {
       const { error } = trade
         ? await supabase.from("swing_trades").update(payload).eq("id", trade.id)
         : await supabase.from("swing_trades").insert(payload);
@@ -141,7 +141,7 @@ export function AddTradeDialog({ open, onOpenChange, onSaved, trade, defaultTick
   );
 
   const finishSave = async (
-    payload: Record<string, unknown>,
+    payload: any,
     syncSlValue: number | null | undefined,
     tickerKey: string
   ) => {
