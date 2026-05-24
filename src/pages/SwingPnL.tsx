@@ -169,22 +169,20 @@ export default function SwingPnL() {
                             g.totalPnl >= 0 ? "text-emerald-400" : "text-red-400"
                           )}
                         >
-                          {g.totalPnl >= 0 ? "+" : ""}${g.totalPnl.toFixed(2)}
+                          {fmtUsdSigned(g.totalPnl)}
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-xs text-muted-foreground mt-0.5">
                         <span>
-                          {g.currentPrice != null
-                            ? `$${g.currentPrice.toFixed(2)}`
-                            : "—"}
+                          {g.currentPrice != null ? fmtUsd(g.currentPrice) : "—"}
                           {g.stopLoss != null && (
                             <span className="ml-2 text-red-400/80">
-                              SL ${g.stopLoss.toFixed(2)}
+                              SL {fmtUsd(g.stopLoss)}
                             </span>
                           )}
                         </span>
                         <span>
-                          Equity ${g.equityTaken.toFixed(0)}
+                          Equity {fmtUsd(g.equityTaken, 0)}
                           {equityPct != null && ` (${equityPct.toFixed(1)}%)`}
                         </span>
                       </div>
@@ -213,8 +211,8 @@ export default function SwingPnL() {
                                     {t.direction.toUpperCase()}
                                   </span>
                                   <span className="text-muted-foreground">
-                                    {format(new Date(t.entry_date), "MMM d")} · $
-                                    {t.capital_invested.toFixed(0)}
+                                    {format(new Date(t.entry_date), "MMM d")} ·{" "}
+                                    {fmtUsd(t.capital_invested, 0)}
                                   </span>
                                   {t.status === "closed" && (
                                     <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
@@ -229,14 +227,14 @@ export default function SwingPnL() {
                                       pnl >= 0 ? "text-emerald-400" : "text-red-400"
                                     )}
                                   >
-                                    {pnl >= 0 ? "+" : ""}${pnl.toFixed(2)}
+                                    {fmtUsdSigned(pnl)}
                                   </span>
                                 )}
                               </div>
                               <div className="flex items-center justify-between mt-1 text-[11px] text-muted-foreground">
                                 <span>
                                   {risk != null && t.status === "active"
-                                    ? `Risk if SL: $${risk.toFixed(2)}`
+                                    ? `${risk >= 0 ? "Profit" : "Loss"} if SL: ${fmtUsdSigned(risk)}`
                                     : "—"}
                                 </span>
                                 <div className="flex gap-3">
