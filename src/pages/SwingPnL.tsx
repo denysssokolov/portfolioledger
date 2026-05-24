@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { AddTradeDialog } from "@/components/AddTradeDialog";
 import type { Trade, Quote } from "@/lib/tradeStats";
 import { pnlOf, sharesOf, riskAtStop } from "@/lib/tradeStats";
+import { fmtUsd, fmtUsdSigned } from "@/lib/format";
 
 type Group = {
   ticker: string;
