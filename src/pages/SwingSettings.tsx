@@ -63,6 +63,12 @@ export default function SwingSettings() {
     <>
       <ScreenHeader title="Settings" subtitle="Swing trade preferences" />
       <div className="px-5 mt-5 space-y-6 pb-28">
+        <form autoComplete="off" onSubmit={(e) => e.preventDefault()}>
+        {/* Hidden decoy fields to suppress browser password-save prompts triggered
+            by the API-key password field below */}
+        <input type="text" name="prevent_autofill" autoComplete="off" className="hidden" />
+        <input type="password" name="prevent_autofill_pw" autoComplete="new-password" className="hidden" />
+
         {/* Account size */}
         <div className="rounded-2xl bg-card border border-border p-5 space-y-4">
           <h3 className="text-sm font-semibold text-foreground">Account & Risk</h3>
@@ -70,6 +76,31 @@ export default function SwingSettings() {
           <div>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Account Size ($)</Label>
             <Input
+              type="number"
+              inputMode="decimal"
+              value={accountSize}
+              onChange={(e) => setAccountSize(e.target.value)}
+              placeholder="10000"
+              autoComplete="off"
+              name="account_size_field"
+            />
+          </div>
+
+          <div>
+            <Label className="text-xs text-muted-foreground mb-1.5 block">
+              Preferred Risk per Trade (%)
+            </Label>
+            <Input
+              type="number"
+              inputMode="decimal"
+              value={riskPct}
+              onChange={(e) => setRiskPct(e.target.value)}
+              placeholder="1"
+              autoComplete="off"
+              name="risk_pct_field"
+            />
+          </div>
+        </div>
               type="number"
               value={accountSize}
               onChange={(e) => setAccountSize(e.target.value)}
