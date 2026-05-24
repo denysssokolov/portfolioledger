@@ -101,12 +101,7 @@ export default function SwingSettings() {
             />
           </div>
         </div>
-              type="number"
-              value={accountSize}
-              onChange={(e) => setAccountSize(e.target.value)}
-              placeholder="10000"
-            />
-        </div>
+
 
         {/* Finnhub API key */}
         <div className="rounded-2xl bg-card border border-border p-5 space-y-4 mt-6">
