@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useSafetyMode } from "@/hooks/useSafetyMode";
 import { cn } from "@/lib/utils";
 import type { Trade, Quote } from "@/lib/tradeStats";
 import { computeStats } from "@/lib/tradeStats";
@@ -33,6 +34,8 @@ const Stat = ({
 );
 
 const fmtPct = (n: number) => `${n.toFixed(1)}%`;
+const fmtDays = (n: number) => (n >= 1 ? `${n.toFixed(1)}d` : `${(n * 24).toFixed(1)}h`);
+const fmtPF = (n: number) => (isFinite(n) ? n.toFixed(2) : "∞");
 
 export default function SwingData() {
   const { user, session } = useAuth();
