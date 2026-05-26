@@ -59,9 +59,10 @@ export type Stats = {
   avgLoss: number;
   avgWinPct: number;
   avgLossPct: number;
-  avgPositionSize: number;
-  avgWinPositionSize: number;
-  avgLossPositionSize: number;
+  avgWinTimeOpen: number;
+  avgLossTimeOpen: number;
+  avgWinTimeClosed: number;
+  avgLossTimeClosed: number;
   avgWinOpen: number;
   avgLossOpen: number;
   avgWinClosed: number;
@@ -70,6 +71,8 @@ export type Stats = {
   winRateClosed: number;
   rrOpen: number;
   rrClosed: number;
+  profitFactorOpen: number;
+  profitFactorClosed: number;
   netIfAllSlHit: number;
   numTrades: number;
   numOpen: number;
@@ -78,6 +81,17 @@ export type Stats = {
   expectancy: number;
   profitFactor: number;
 };
+
+const MS_PER_DAY = 86_400_000;
+const daysBetween = (a: string, b: string) => {
+  const d = (new Date(b).getTime() - new Date(a).getTime()) / MS_PER_DAY;
+  return d > 0 ? d : 0;
+};
+const todayISO = () => new Date().toISOString().slice(0, 10);
+const tradeDurationDays = (t: Trade) =>
+  t.status === "closed" && t.exit_date
+    ? daysBetween(t.entry_date, t.exit_date)
+    : daysBetween(t.entry_date, todayISO());
 
 export function computeStats(
   trades: Trade[],
@@ -107,10 +121,6 @@ export function computeStats(
   const avgWinPct = equity > 0 ? (avgWin / equity) * 100 : 0;
   const avgLossPct = equity > 0 ? (avgLoss / equity) * 100 : 0;
 
-  const avgPositionSize = avg(trades.map((t) => t.capital_invested));
-  const avgWinPositionSize = avg(wins.map((x) => x.t.capital_invested));
-  const avgLossPositionSize = avg(losses.map((x) => x.t.capital_invested));
-
   const winRateOpen = open.length
     ? (openPnls.filter((p) => p > 0).length / open.length) * 100
     : 0;
@@ -123,6 +133,19 @@ export function computeStats(
   const avgWinClosed = avg(closedPairs.filter((x) => x.p > 0).map((x) => x.p));
   const avgLossClosed = avg(closedPairs.filter((x) => x.p < 0).map((x) => x.p));
 
+  const avgWinTimeOpen = avg(
+    openPairs.filter((x) => x.p > 0).map((x) => tradeDurationDays(x.t))
+  );
+  const avgLossTimeOpen = avg(
+    openPairs.filter((x) => x.p < 0).map((x) => tradeDurationDays(x.t))
+  );
+  const avgWinTimeClosed = avg(
+    closedPairs.filter((x) => x.p > 0).map((x) => tradeDurationDays(x.t))
+  );
+  const avgLossTimeClosed = avg(
+    closedPairs.filter((x) => x.p < 0).map((x) => tradeDurationDays(x.t))
+  );
+
   const rrFor = (subset: { t: Trade; p: number }[]) => {
     const w = subset.filter((x) => x.p > 0).map((x) => x.p);
     const l = subset.filter((x) => x.p < 0).map((x) => Math.abs(x.p));
@@ -131,6 +154,15 @@ export function computeStats(
   };
   const rrOpen = rrFor(openPairs);
   const rrClosed = rrFor(closedPairs);
+
+  const pfFor = (subset: { t: Trade; p: number }[]) => {
+    const w = sum(subset.filter((x) => x.p > 0).map((x) => x.p));
+    const l = Math.abs(sum(subset.filter((x) => x.p < 0).map((x) => x.p)));
+    if (l > 0) return w / l;
+    return w > 0 ? Infinity : 0;
+  };
+  const profitFactorOpen = pfFor(openPairs);
+  const profitFactorClosed = pfFor(closedPairs);
 
   // Signed net result if every open stop-loss were hit (SL above entry on longs adds profit)
   const netIfAllSlHit = sum(open.map((t) => pnlAtStop(t) ?? 0));
@@ -161,9 +193,10 @@ export function computeStats(
     avgLoss,
     avgWinPct,
     avgLossPct,
-    avgPositionSize,
-    avgWinPositionSize,
-    avgLossPositionSize,
+    avgWinTimeOpen,
+    avgLossTimeOpen,
+    avgWinTimeClosed,
+    avgLossTimeClosed,
     avgWinOpen,
     avgLossOpen,
     avgWinClosed,
@@ -172,6 +205,8 @@ export function computeStats(
     winRateClosed,
     rrOpen,
     rrClosed,
+    profitFactorOpen,
+    profitFactorClosed,
     netIfAllSlHit,
     numTrades: trades.length,
     numOpen: open.length,
