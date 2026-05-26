@@ -371,6 +371,23 @@ export function AddTradeDialog({ open, onOpenChange, onSaved, trade, defaultTick
                   autoComplete="off"
                   name="stop_loss_field"
                 />
+                {!editing &&
+                  ticker.trim() &&
+                  openSlByTicker[ticker.trim().toUpperCase()] != null &&
+                  Number(openSlByTicker[ticker.trim().toUpperCase()]) !== Number(stopLoss) && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setStopLoss(
+                          String(openSlByTicker[ticker.trim().toUpperCase()])
+                        )
+                      }
+                      className="mt-1.5 text-[11px] font-medium text-primary hover:underline"
+                    >
+                      Use existing SL: $
+                      {openSlByTicker[ticker.trim().toUpperCase()].toFixed(2)}
+                    </button>
+                  )}
                 {riskAmount != null && (
                   <div
                     className={cn(
