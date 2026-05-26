@@ -10,6 +10,7 @@ import { AddTradeDialog } from "@/components/AddTradeDialog";
 import type { Trade, Quote } from "@/lib/tradeStats";
 import { pnlOf, sharesOf, riskAtStop } from "@/lib/tradeStats";
 import { fmtUsd, fmtUsdSigned } from "@/lib/format";
+import { useSafetyMode } from "@/hooks/useSafetyMode";
 
 type Group = {
   ticker: string;
@@ -23,6 +24,7 @@ type Group = {
 
 export default function SwingPnL() {
   const { user, session } = useAuth();
+  useSafetyMode();
   const [trades, setTrades] = useState<Trade[]>([]);
   const [quotes, setQuotes] = useState<Record<string, Quote>>({});
   const [accountSize, setAccountSize] = useState<number | null>(null);
