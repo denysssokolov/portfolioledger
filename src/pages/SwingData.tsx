@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useSafetyMode } from "@/hooks/useSafetyMode";
 import { cn } from "@/lib/utils";
 import type { Trade, Quote } from "@/lib/tradeStats";
 import { computeStats } from "@/lib/tradeStats";
@@ -33,9 +34,12 @@ const Stat = ({
 );
 
 const fmtPct = (n: number) => `${n.toFixed(1)}%`;
+const fmtDays = (n: number) => (n >= 1 ? `${n.toFixed(1)}d` : `${(n * 24).toFixed(1)}h`);
+const fmtPF = (n: number) => (isFinite(n) ? n.toFixed(2) : "∞");
 
 export default function SwingData() {
   const { user, session } = useAuth();
+  useSafetyMode();
   const [trades, setTrades] = useState<Trade[]>([]);
   const [quotes, setQuotes] = useState<Record<string, Quote>>({});
   const [accountSize, setAccountSize] = useState<number>(0);
@@ -96,12 +100,13 @@ export default function SwingData() {
 
         <section>
           <h3 className="text-xs uppercase tracking-wide text-muted-foreground mb-2">
-            Average position size
+            Average position time
           </h3>
-          <div className="grid grid-cols-3 gap-2">
-            <Stat label="All trades" value={fmtUsd(s.avgPositionSize)} />
-            <Stat label="Winners" value={fmtUsd(s.avgWinPositionSize)} tone="good" />
-            <Stat label="Losers" value={fmtUsd(s.avgLossPositionSize)} tone="bad" />
+          <div className="grid grid-cols-2 gap-2">
+            <Stat label="Open · Winners" value={fmtDays(s.avgWinTimeOpen)} tone="good" />
+            <Stat label="Open · Losers" value={fmtDays(s.avgLossTimeOpen)} tone="bad" />
+            <Stat label="Closed · Winners" value={fmtDays(s.avgWinTimeClosed)} tone="good" />
+            <Stat label="Closed · Losers" value={fmtDays(s.avgLossTimeClosed)} tone="bad" />
           </div>
         </section>
 
@@ -126,6 +131,11 @@ export default function SwingData() {
             <Stat label="Avg Loser" value={fmtUsd(s.avgLossOpen)} tone="bad" />
             <Stat label="Win Rate" value={fmtPct(s.winRateOpen)} />
             <Stat label="R:R" value={s.rrOpen.toFixed(2)} />
+            <Stat
+              label="Profit Factor"
+              value={fmtPF(s.profitFactorOpen)}
+              tone={s.profitFactorOpen >= 1 ? "good" : "bad"}
+            />
           </div>
         </section>
 
@@ -138,6 +148,11 @@ export default function SwingData() {
             <Stat label="Avg Loser" value={fmtUsd(s.avgLossClosed)} tone="bad" />
             <Stat label="Win Rate" value={fmtPct(s.winRateClosed)} />
             <Stat label="R:R" value={s.rrClosed.toFixed(2)} />
+            <Stat
+              label="Profit Factor"
+              value={fmtPF(s.profitFactorClosed)}
+              tone={s.profitFactorClosed >= 1 ? "good" : "bad"}
+            />
           </div>
         </section>
 

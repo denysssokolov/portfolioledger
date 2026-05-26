@@ -18,9 +18,11 @@ import {
 import type { Trade, Quote } from "@/lib/tradeStats";
 import { pnlOf, pnlPctOf } from "@/lib/tradeStats";
 import { fmtUsdSigned } from "@/lib/format";
+import { useSafetyMode } from "@/hooks/useSafetyMode";
 
 export default function SwingTrades() {
   const { user, session } = useAuth();
+  useSafetyMode(); // re-render when safety mode toggles
   const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);

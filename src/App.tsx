@@ -23,6 +23,7 @@ import SwingTradesLayout from "./components/SwingTradesLayout";
 import NotFound from "./pages/NotFound.tsx";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { CookieBanner } from "./components/CookieBanner";
+import { AccessGate } from "./components/AccessGate";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ const RequireOnboarding = ({ children }: { children: React.ReactNode }) => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+      <AccessGate>
       <Toaster />
       <Sonner />
       <BrowserRouter>
@@ -96,6 +98,7 @@ const App = () => (
           <CookieBanner />
         </AuthProvider>
       </BrowserRouter>
+      </AccessGate>
     </TooltipProvider>
   </QueryClientProvider>
 );
