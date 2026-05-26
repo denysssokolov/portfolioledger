@@ -54,22 +54,31 @@ export function AddTradeDialog({ open, onOpenChange, onSaved, trade, defaultTick
   const [exitDate, setExitDate] = useState<Date>(new Date());
   const [saving, setSaving] = useState(false);
   const [knownTickers, setKnownTickers] = useState<string[]>([]);
+  const [openSlByTicker, setOpenSlByTicker] = useState<Record<string, number>>({});
   const [slPrompt, setSlPrompt] = useState<{
     message: string;
     onYes: () => Promise<void>;
     onNo: () => Promise<void>;
   } | null>(null);
 
-  // Load distinct tickers from user's trade history for autocomplete
+  // Load distinct tickers + existing stop losses on open trades for autocomplete + 1-click SL copy
   useEffect(() => {
     if (!open || !user) return;
     supabase
       .from("swing_trades")
-      .select("ticker")
+      .select("ticker, stop_loss, status")
       .eq("user_id", user.id)
       .then(({ data }) => {
-        const set = new Set<string>((data ?? []).map((r: { ticker: string }) => r.ticker));
+        const set = new Set<string>();
+        const slMap: Record<string, number> = {};
+        (data ?? []).forEach((r: { ticker: string; stop_loss: number | null; status: string }) => {
+          set.add(r.ticker);
+          if (r.status === "active" && r.stop_loss != null && slMap[r.ticker] == null) {
+            slMap[r.ticker] = Number(r.stop_loss);
+          }
+        });
         setKnownTickers([...set].sort());
+        setOpenSlByTicker(slMap);
       });
   }, [open, user]);
 
