@@ -217,6 +217,32 @@ export default function Auth() {
               </div>
             )}
 
+            {mode === "signup" && (
+              <div className="space-y-2">
+                <Label htmlFor="accessCode">Access code</Label>
+                <Input
+                  id="accessCode"
+                  type="password"
+                  inputMode="numeric"
+                  required
+                  autoComplete="off"
+                  value={accessCode}
+                  onChange={(e) => {
+                    setAccessCode(e.target.value);
+                    if (accessCodeError) setAccessCodeError(null);
+                  }}
+                  placeholder="••••"
+                  aria-invalid={!!accessCodeError}
+                  className={`h-12 rounded-xl bg-secondary border-0 text-center tracking-[0.4em] text-lg ${
+                    accessCodeError ? "ring-2 ring-destructive" : ""
+                  }`}
+                />
+                {accessCodeError && (
+                  <p className="text-sm font-medium text-destructive">{accessCodeError}</p>
+                )}
+              </div>
+            )}
+
             {formError && (
               <p className="text-sm font-medium text-destructive">{formError}</p>
             )}
