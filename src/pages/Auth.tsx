@@ -17,6 +17,8 @@ export default function Auth() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [accessCode, setAccessCode] = useState("");
+  const [accessCodeError, setAccessCodeError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
@@ -29,6 +31,7 @@ export default function Auth() {
   useEffect(() => {
     setEmailError(null);
     setFormError(null);
+    setAccessCodeError(null);
   }, [mode]);
 
   const switchMode = (next: Mode) => {
@@ -48,12 +51,21 @@ export default function Auth() {
           setBusy(false);
           return;
         }
+        const code = accessCode.trim();
+        let access_mode: "demo" | "full" | null = null;
+        if (code === "1234") access_mode = "demo";
+        else if (code === "0912") access_mode = "full";
+        else {
+          setAccessCodeError("Invalid access code.");
+          setBusy(false);
+          return;
+        }
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/`,
-            data: { display_name: name.trim() },
+            data: { display_name: name.trim(), access_mode },
           },
         });
         if (error) {
