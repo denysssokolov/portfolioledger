@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { format } from "date-fns";
-import { CalendarIcon, Trash2 } from "lucide-react";
+import { CalendarIcon, Trash2, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -60,6 +61,13 @@ export function AddTradeDialog({ open, onOpenChange, onSaved, trade, defaultTick
     onYes: () => Promise<void>;
     onNo: () => Promise<void>;
   } | null>(null);
+  const [tickerSuggestOpen, setTickerSuggestOpen] = useState(false);
+  const [currentPrice, setCurrentPrice] = useState<number | null>(null);
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const [useCurrentEntry, setUseCurrentEntry] = useState(true);
+  const [useCurrentExit, setUseCurrentExit] = useState(true);
+  const [openSiblingCount, setOpenSiblingCount] = useState(0);
+  const [closingAll, setClosingAll] = useState(false);
 
   // Load distinct tickers + existing stop losses on open trades for autocomplete + 1-click SL copy
   useEffect(() => {
@@ -94,6 +102,8 @@ export function AddTradeDialog({ open, onOpenChange, onSaved, trade, defaultTick
       setStatus(trade.status as "active" | "closed");
       setExitPrice(trade.exit_price != null ? String(trade.exit_price) : "");
       setExitDate(trade.exit_date ? new Date(trade.exit_date) : new Date());
+      setUseCurrentEntry(false);
+      setUseCurrentExit(trade.status !== "closed");
     } else {
       setDirection("long");
       setTicker(defaultTicker ?? "");
@@ -104,7 +114,11 @@ export function AddTradeDialog({ open, onOpenChange, onSaved, trade, defaultTick
       setStatus("active");
       setExitPrice("");
       setExitDate(new Date());
+      setUseCurrentEntry(true);
+      setUseCurrentExit(true);
     }
+    setTickerSuggestOpen(false);
+    setCurrentPrice(null);
   }, [open, trade, defaultTicker]);
 
   const riskAmount = useMemo(() => {
@@ -133,6 +147,72 @@ export function AddTradeDialog({ open, onOpenChange, onSaved, trade, defaultTick
     },
     []
   );
+
+  // Fetch live quote for current ticker (debounced)
+  useEffect(() => {
+    if (!open) return;
+    const t = ticker.trim().toUpperCase();
+    if (!t) {
+      setCurrentPrice(null);
+      return;
+    }
+    let cancelled = false;
+    setQuoteLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("finnhub-quotes", {
+          body: { tickers: [t] },
+        });
+        if (cancelled) return;
+        if (error) {
+          setCurrentPrice(null);
+        } else {
+          const c = data?.quotes?.[t]?.c;
+          setCurrentPrice(typeof c === "number" && c > 0 ? c : null);
+        }
+      } catch {
+        if (!cancelled) setCurrentPrice(null);
+      } finally {
+        if (!cancelled) setQuoteLoading(false);
+      }
+    }, 400);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [open, ticker]);
+
+  // Count other open trades for the same ticker (for "close all" affordance)
+  useEffect(() => {
+    if (!open || !user) {
+      setOpenSiblingCount(0);
+      return;
+    }
+    const t = ticker.trim().toUpperCase();
+    if (!t) {
+      setOpenSiblingCount(0);
+      return;
+    }
+    supabase
+      .from("swing_trades")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("ticker", t)
+      .eq("status", "active")
+      .then(({ count }) => {
+        const c = count ?? 0;
+        // Exclude self if editing an active trade
+        setOpenSiblingCount(trade && trade.status === "active" ? Math.max(0, c - 1) : c);
+      });
+  }, [open, user, ticker, trade]);
+
+  const filteredSuggestions = useMemo(() => {
+    const q = ticker.trim().toUpperCase();
+    const list = q
+      ? knownTickers.filter((t) => t.includes(q) && t !== q)
+      : knownTickers;
+    return list.slice(0, 8);
+  }, [knownTickers, ticker]);
 
   const persistTrade = useCallback(
     async (payload: any) => {
@@ -184,10 +264,18 @@ export function AddTradeDialog({ open, onOpenChange, onSaved, trade, defaultTick
 
   const handleSave = async () => {
     if (!user) return;
-    if (!ticker.trim() || !capitalInvested || !entryPrice) {
+    const effectiveEntryPrice =
+      useCurrentEntry && currentPrice != null && !entryPrice
+        ? String(currentPrice)
+        : entryPrice;
+    if (!ticker.trim() || !capitalInvested || !effectiveEntryPrice) {
       toast.error("Fill in ticker, capital invested, and entry price");
       return;
     }
+    const effectiveExitPrice =
+      status === "closed" && useCurrentExit && currentPrice != null && !exitPrice
+        ? String(currentPrice)
+        : exitPrice;
     const tickerKey = ticker.trim().toUpperCase();
     setSaving(true);
 
@@ -209,10 +297,10 @@ export function AddTradeDialog({ open, onOpenChange, onSaved, trade, defaultTick
       ticker: tickerKey,
       direction,
       capital_invested: Number(capitalInvested),
-      entry_price: Number(entryPrice),
+      entry_price: Number(effectiveEntryPrice),
       entry_date: format(entryDate, "yyyy-MM-dd"),
       stop_loss: newSlNum,
-      exit_price: status === "closed" && exitPrice ? Number(exitPrice) : null,
+      exit_price: status === "closed" && effectiveExitPrice ? Number(effectiveExitPrice) : null,
       exit_date: status === "closed" ? format(exitDate, "yyyy-MM-dd") : null,
     };
 
@@ -272,6 +360,42 @@ export function AddTradeDialog({ open, onOpenChange, onSaved, trade, defaultTick
     onSaved();
   };
 
+  const handleCloseAllOfTicker = async () => {
+    if (!user) return;
+    const tickerKey = ticker.trim().toUpperCase();
+    if (!tickerKey) {
+      toast.error("Set a ticker first");
+      return;
+    }
+    const priceStr =
+      useCurrentExit && currentPrice != null && !exitPrice ? String(currentPrice) : exitPrice;
+    if (!priceStr) {
+      toast.error("No exit price available");
+      return;
+    }
+    if (!confirm(`Close ALL open ${tickerKey} positions at $${Number(priceStr).toFixed(2)}?`)) return;
+    setClosingAll(true);
+    const { error } = await supabase
+      .from("swing_trades")
+      .update({
+        status: "closed",
+        exit_price: Number(priceStr),
+        exit_date: format(exitDate, "yyyy-MM-dd"),
+      })
+      .eq("user_id", user.id)
+      .eq("ticker", tickerKey)
+      .eq("status", "active");
+    setClosingAll(false);
+    if (error) {
+      console.error(error);
+      toast.error("Couldn't close positions");
+      return;
+    }
+    toast.success(`All open ${tickerKey} positions closed`);
+    onOpenChange(false);
+    onSaved();
+  };
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -316,22 +440,44 @@ export function AddTradeDialog({ open, onOpenChange, onSaved, trade, defaultTick
 
             <div>
               <Label className="text-xs text-muted-foreground mb-1.5 block">Ticker</Label>
-              <Input
-                list="known-tickers"
-                value={ticker}
-                onChange={(e) => setTicker(e.target.value.toUpperCase())}
-                placeholder="AAPL"
-                autoCapitalize="characters"
-                autoComplete="off"
-                name="ticker_symbol_field"
-              />
-              <datalist id="known-tickers">
-                {knownTickers
-                  .filter((t) => !ticker || t.includes(ticker.toUpperCase()))
-                  .map((t) => (
-                    <option key={t} value={t} />
-                  ))}
-              </datalist>
+              <div className="relative">
+                <Input
+                  value={ticker}
+                  onChange={(e) => {
+                    setTicker(e.target.value.toUpperCase());
+                    setTickerSuggestOpen(true);
+                  }}
+                  onFocus={() => setTickerSuggestOpen(true)}
+                  onBlur={() => setTimeout(() => setTickerSuggestOpen(false), 150)}
+                  placeholder="AAPL"
+                  autoCapitalize="characters"
+                  autoComplete="off"
+                  name="ticker_symbol_field"
+                />
+                {tickerSuggestOpen && filteredSuggestions.length > 0 && (
+                  <div className="absolute z-50 left-0 right-0 mt-1 rounded-xl border border-border bg-popover shadow-md max-h-56 overflow-y-auto">
+                    {filteredSuggestions.map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          setTicker(t);
+                          setTickerSuggestOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {currentPrice != null && (
+                <div className="mt-1 text-[11px] text-muted-foreground">
+                  Current price: <span className="text-foreground font-medium">${currentPrice.toFixed(2)}</span>
+                </div>
+              )}
             </div>
 
             <div>
@@ -353,12 +499,35 @@ export function AddTradeDialog({ open, onOpenChange, onSaved, trade, defaultTick
                 <Input
                   type="number"
                   inputMode="decimal"
-                  value={entryPrice}
-                  onChange={(e) => setEntryPrice(e.target.value)}
-                  placeholder="150.00"
+                  value={
+                    useCurrentEntry && !entryPrice && currentPrice != null
+                      ? currentPrice.toFixed(2)
+                      : entryPrice
+                  }
+                  onChange={(e) => {
+                    setEntryPrice(e.target.value);
+                    if (e.target.value) setUseCurrentEntry(false);
+                  }}
+                  placeholder={currentPrice != null ? currentPrice.toFixed(2) : "150.00"}
+                  disabled={useCurrentEntry && !entryPrice}
                   autoComplete="off"
                   name="entry_price_field"
                 />
+                {!editing && (
+                  <label className="mt-1.5 flex items-center gap-2 text-[11px] text-muted-foreground cursor-pointer">
+                    <Checkbox
+                      checked={useCurrentEntry}
+                      onCheckedChange={(v) => {
+                        const checked = v === true;
+                        setUseCurrentEntry(checked);
+                        if (checked) setEntryPrice("");
+                      }}
+                      disabled={currentPrice == null}
+                    />
+                    Use current price
+                    {quoteLoading && currentPrice == null ? " (loading…)" : ""}
+                  </label>
+                )}
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground mb-1.5 block">Stop Loss</Label>
@@ -448,18 +617,39 @@ export function AddTradeDialog({ open, onOpenChange, onSaved, trade, defaultTick
                   ))}
                 </div>
                 {status === "closed" && (
+                  <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Exit Price</Label>
                       <Input
                         type="number"
                         inputMode="decimal"
-                        value={exitPrice}
-                        onChange={(e) => setExitPrice(e.target.value)}
-                        placeholder="160.00"
+                        value={
+                          useCurrentExit && !exitPrice && currentPrice != null
+                            ? currentPrice.toFixed(2)
+                            : exitPrice
+                        }
+                        onChange={(e) => {
+                          setExitPrice(e.target.value);
+                          if (e.target.value) setUseCurrentExit(false);
+                        }}
+                        placeholder={currentPrice != null ? currentPrice.toFixed(2) : "160.00"}
+                        disabled={useCurrentExit && !exitPrice}
                         autoComplete="off"
                         name="exit_price_field"
                       />
+                      <label className="mt-1.5 flex items-center gap-2 text-[11px] text-muted-foreground cursor-pointer">
+                        <Checkbox
+                          checked={useCurrentExit}
+                          onCheckedChange={(v) => {
+                            const checked = v === true;
+                            setUseCurrentExit(checked);
+                            if (checked) setExitPrice("");
+                          }}
+                          disabled={currentPrice == null}
+                        />
+                        Use current price
+                      </label>
                     </div>
                     <div>
                       <Label className="text-xs text-muted-foreground mb-1.5 block">Exit Date</Label>
@@ -485,6 +675,20 @@ export function AddTradeDialog({ open, onOpenChange, onSaved, trade, defaultTick
                         </PopoverContent>
                       </Popover>
                     </div>
+                  </div>
+                  {openSiblingCount > 0 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleCloseAllOfTicker}
+                      disabled={closingAll}
+                      className="w-full rounded-xl border-red-500/40 text-red-500 hover:bg-red-500/10"
+                    >
+                      {closingAll
+                        ? "Closing…"
+                        : `Close all ${ticker.trim().toUpperCase()} positions (${openSiblingCount + 1})`}
+                    </Button>
+                  )}
                   </div>
                 )}
               </div>
