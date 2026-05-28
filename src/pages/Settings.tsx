@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Trash2, AlertTriangle, Wallet, ChevronRight } from "lucide-react";
+import { Trash2, AlertTriangle, Wallet, ChevronRight, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { UnlockFullAccessCard } from "@/components/UnlockFullAccessCard";
 
@@ -51,6 +51,18 @@ export default function Settings() {
           </div>
           <div className="font-medium mt-1 break-all">{user?.email ?? "—"}</div>
         </div>
+
+        <Button
+          variant="outline"
+          onClick={async () => {
+            await signOut();
+            nav("/auth", { replace: true });
+          }}
+          className="w-full h-12 rounded-xl justify-between"
+        >
+          <span>Sign out</span>
+          <LogOut className="h-4 w-4" />
+        </Button>
 
         <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
           <div className="flex items-start gap-3 mb-4">
