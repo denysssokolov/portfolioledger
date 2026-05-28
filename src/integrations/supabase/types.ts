@@ -188,6 +188,7 @@ export type Database = {
           cash_portion: number
           created_at: string
           id: string
+          invested_override: number | null
           month: string
           skipped: boolean
           updated_at: string
@@ -199,6 +200,7 @@ export type Database = {
           cash_portion?: number
           created_at?: string
           id?: string
+          invested_override?: number | null
           month: string
           skipped?: boolean
           updated_at?: string
@@ -210,6 +212,7 @@ export type Database = {
           cash_portion?: number
           created_at?: string
           id?: string
+          invested_override?: number | null
           month?: string
           skipped?: boolean
           updated_at?: string
