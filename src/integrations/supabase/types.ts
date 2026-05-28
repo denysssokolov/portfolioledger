@@ -49,7 +49,6 @@ export type Database = {
       }
       profiles: {
         Row: {
-          access_mode: string
           created_at: string
           display_name: string | null
           id: string
@@ -58,7 +57,6 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          access_mode?: string
           created_at?: string
           display_name?: string | null
           id?: string
@@ -67,7 +65,6 @@ export type Database = {
           user_id: string
         }
         Update: {
-          access_mode?: string
           created_at?: string
           display_name?: string | null
           id?: string
