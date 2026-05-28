@@ -31,6 +31,7 @@ export default function SwingTrades() {
   const [accountSize, setAccountSize] = useState<number | null>(null);
   const [search, setSearch] = useState("");
   const [monthFilter, setMonthFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<"active" | "closed">("active");
 
   const fetchTrades = async () => {
     if (!user) return;
@@ -122,11 +123,12 @@ export default function SwingTrades() {
 
   const filtered = useMemo(() => {
     return trades.filter((t) => {
+      if (t.status !== statusFilter) return false;
       if (search && !t.ticker.toLowerCase().includes(search.toLowerCase())) return false;
       if (monthFilter !== "all" && !t.entry_date.startsWith(monthFilter)) return false;
       return true;
     });
-  }, [trades, search, monthFilter]);
+  }, [trades, search, monthFilter, statusFilter]);
 
   return (
     <>
@@ -155,6 +157,27 @@ export default function SwingTrades() {
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          {(["active", "closed"] as const).map((s) => {
+            const count = trades.filter((t) => t.status === s).length;
+            const active = statusFilter === s;
+            return (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className={cn(
+                  "py-2 rounded-xl text-sm font-medium border transition-colors",
+                  active
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-card text-muted-foreground border-border hover:text-foreground"
+                )}
+              >
+                {s === "active" ? "Open" : "Closed"} ({count})
+              </button>
+            );
+          })}
         </div>
 
         {loading ? (
