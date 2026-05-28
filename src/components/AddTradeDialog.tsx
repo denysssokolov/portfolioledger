@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { format } from "date-fns";
-import { CalendarIcon, Trash2, X } from "lucide-react";
+import { CalendarIcon, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
