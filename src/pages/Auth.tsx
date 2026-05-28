@@ -39,8 +39,7 @@ export default function Auth() {
     setPassword("");
   };
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async () => {
     setBusy(true);
     setEmailError(null);
     setFormError(null);
@@ -153,7 +152,7 @@ export default function Auth() {
           <h1 className="font-display text-2xl font-bold mb-1">{title}</h1>
           <p className="text-sm text-muted-foreground mb-6">{subtitle}</p>
 
-          <form onSubmit={onSubmit} className="space-y-4">
+          <div className="space-y-4">
             {mode === "signup" && (
               <div className="space-y-2">
                 <Label htmlFor="name">Your name</Label>
@@ -222,10 +221,12 @@ export default function Auth() {
                 <Label htmlFor="accessCode">Access code</Label>
                 <Input
                   id="accessCode"
-                  type="password"
+                  type="text"
                   inputMode="numeric"
+                  maxLength={4}
                   required
-                  autoComplete="off"
+                  autoComplete="one-time-code"
+                  data-form-type="other"
                   value={accessCode}
                   onChange={(e) => {
                     setAccessCode(e.target.value);
@@ -248,7 +249,8 @@ export default function Auth() {
             )}
 
             <Button
-              type="submit"
+              type="button"
+              onClick={onSubmit}
               disabled={busy}
               className="w-full h-12 rounded-xl bg-gradient-primary text-primary-foreground hover:opacity-90 font-semibold shadow-elegant"
             >
@@ -260,7 +262,7 @@ export default function Auth() {
                 ? "Create account"
                 : "Send reset link"}
             </Button>
-          </form>
+          </div>
 
           <button
             type="button"
