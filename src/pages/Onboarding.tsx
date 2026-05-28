@@ -230,6 +230,7 @@ export default function Onboarding() {
     <div className="min-h-screen bg-background relative">
       <div className="absolute inset-0 bg-gradient-hero pointer-events-none" />
       <div className="relative mx-auto max-w-2xl px-5 py-10">
+        <div data-form-type="other">
         {step === 0 && (
           <div className="animate-slide-up">
             <div className="flex items-center gap-3 mb-8">
@@ -598,6 +599,7 @@ export default function Onboarding() {
             </div>
           </>
         )}
+      </div>
       </div>
     </div>
   );
