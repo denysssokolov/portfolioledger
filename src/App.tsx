@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/usePortfolioData";
+import { useEffect } from "react";
+import { setAccessMode, getAccessMode } from "@/lib/accessMode";
 import AppLayout from "@/components/AppLayout";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
@@ -30,6 +32,15 @@ const queryClient = new QueryClient();
 const Gate = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   const { data: profile, isLoading: pl } = useProfile(user?.id);
+  // Keep the local-storage access mode in sync with the signed-in user's
+  // profile so the demo write-guard knows which mutations to short-circuit.
+  useEffect(() => {
+    if (!profile) return;
+    const mode = (profile as { access_mode?: string }).access_mode === "demo"
+      ? "demo"
+      : "full";
+    if (getAccessMode() !== mode) setAccessMode(mode);
+  }, [profile]);
   if (loading) return <div className="min-h-screen bg-background" />;
   if (!user) return <Navigate to="/auth" replace />;
   if (pl) return <div className="min-h-screen bg-background" />;
