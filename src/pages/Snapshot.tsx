@@ -18,8 +18,6 @@ import { toast } from "sonner";
 import { Lock, SkipForward, Pencil, Trash2 } from "lucide-react";
 import { useSafetyMode } from "@/hooks/useSafetyMode";
 import { isMonthEditable, daysLeftUntilEditable } from "@/lib/snapshotRules";
-import { Input } from "@/components/ui/input";
-import { Plus } from "lucide-react";
 
 type MonthState =
   | { kind: "filled"; total: number; filledAt: string }
@@ -43,8 +41,6 @@ export default function Snapshot() {
   const [skipping, setSkipping] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-  const [addOpen, setAddOpen] = useState(false);
-  const [addMonth, setAddMonth] = useState("");
 
   // Reference month = earliest snapshot the user has created. Don't surface anything older.
   const startMonth = useMemo(() => {
@@ -148,17 +144,6 @@ export default function Snapshot() {
 
 
       <div className="px-5 space-y-2 pb-8">
-        <Button
-          variant="outline"
-          className="w-full rounded-2xl h-12"
-          onClick={() => {
-            const earliest = months[months.length - 1] ?? monthKey(new Date());
-            setAddMonth(addMonths(earliest, -1).slice(0, 7));
-            setAddOpen(true);
-          }}
-        >
-          <Plus className="h-4 w-4 mr-1" /> Add earlier month
-        </Button>
         {months.map((m) => {
           const st = stateByMonth[m];
           const clickable = st.kind === "filled" || st.kind === "empty";
@@ -300,45 +285,6 @@ export default function Snapshot() {
                 onClick={() => confirmDelete && deleteMonth(confirmDelete)}
               >
                 {deleting ? "Deleting..." : "Delete"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={addOpen} onOpenChange={setAddOpen}>
-        <DialogContent className="bg-card border-border max-w-sm rounded-3xl">
-          <DialogHeader>
-            <DialogTitle className="font-display text-xl">Add earlier month</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Pick a past month to create a snapshot for.
-            </p>
-            <Input
-              type="month"
-              value={addMonth}
-              max={monthKey(new Date()).slice(0, 7)}
-              onChange={(e) => setAddMonth(e.target.value)}
-              className="h-11 rounded-xl"
-            />
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex-1 h-11 rounded-xl" onClick={() => setAddOpen(false)}>
-                Cancel
-              </Button>
-              <Button
-                className="flex-1 h-11 rounded-xl bg-gradient-primary text-primary-foreground"
-                disabled={!addMonth}
-                onClick={() => {
-                  if (!addMonth) return;
-                  const iso = `${addMonth}-01`;
-                  const today = monthKey(new Date());
-                  if (iso > today) return toast.error("Pick a past or current month");
-                  setAddOpen(false);
-                  navigate(`/snapshot/${iso}`);
-                }}
-              >
-                Continue
               </Button>
             </div>
           </div>
