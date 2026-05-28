@@ -33,6 +33,7 @@ export default function SwingPnL() {
   const [addingTicker, setAddingTicker] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showClosed, setShowClosed] = useState<Record<string, boolean>>({});
 
   const fetchTrades = useCallback(async () => {
     if (!user) return;
