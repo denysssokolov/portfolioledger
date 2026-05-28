@@ -129,6 +129,28 @@ export default function SwingPnL() {
     fetchTrades();
   };
 
+  const closeAllOfTicker = async (ticker: string, openTrades: Trade[]) => {
+    const q = quotes[ticker] ?? null;
+    const px = q?.c;
+    if (!px) {
+      toast.error("No live price available.");
+      return;
+    }
+    if (!confirm(`Close all ${openTrades.length} open ${ticker} positions at $${px.toFixed(2)}?`)) return;
+    const today = format(new Date(), "yyyy-MM-dd");
+    const ids = openTrades.map((t) => t.id);
+    const { error } = await supabase
+      .from("swing_trades")
+      .update({ status: "closed", exit_price: px, exit_date: today })
+      .in("id", ids);
+    if (error) {
+      toast.error("Couldn't close all trades");
+      return;
+    }
+    toast.success(`Closed ${openTrades.length} ${ticker} positions`);
+    fetchTrades();
+  };
+
   return (
     <>
       <ScreenHeader title="PnL" subtitle="Aggregated by stock" />
