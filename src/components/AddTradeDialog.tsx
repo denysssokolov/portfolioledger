@@ -544,18 +544,25 @@ export function AddTradeDialog({ open, onOpenChange, onSaved, trade, defaultTick
                   ticker.trim() &&
                   openSlByTicker[ticker.trim().toUpperCase()] != null &&
                   Number(openSlByTicker[ticker.trim().toUpperCase()]) !== Number(stopLoss) && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setStopLoss(
-                          String(openSlByTicker[ticker.trim().toUpperCase()])
-                        )
-                      }
-                      className="mt-1.5 text-[11px] font-medium text-primary hover:underline"
-                    >
+                    <label className="mt-1.5 flex items-center gap-2 text-[11px] text-muted-foreground cursor-pointer">
+                      <Checkbox
+                        checked={
+                          Number(stopLoss) ===
+                          Number(openSlByTicker[ticker.trim().toUpperCase()])
+                        }
+                        onCheckedChange={(v) => {
+                          if (v === true) {
+                            setStopLoss(
+                              String(openSlByTicker[ticker.trim().toUpperCase()])
+                            );
+                          } else {
+                            setStopLoss("");
+                          }
+                        }}
+                      />
                       Use existing SL: $
                       {openSlByTicker[ticker.trim().toUpperCase()].toFixed(2)}
-                    </button>
+                    </label>
                   )}
                 {riskAmount != null && (
                   <div
