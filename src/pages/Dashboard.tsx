@@ -87,7 +87,7 @@ export default function Dashboard() {
     toast("Time to record this month's snapshot", {
       description: "End of month is here — capture your account balances.",
       action: { label: "Open", onClick: () => navigate("/snapshot") },
-      duration: 8000,
+      duration: Infinity,
     });
   }, [user, snaps, navigate]);
 
