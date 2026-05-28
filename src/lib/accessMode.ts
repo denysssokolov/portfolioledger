@@ -10,6 +10,9 @@ const EVENT = "accessMode:change";
 export const DEMO_CODE = "1234";
 export const FULL_CODE = "0912";
 
+export const LOCKED_MESSAGE =
+  "This feature is locked. Enter an unlock code in Settings → Investment portfolio.";
+
 export const getAccessMode = (): AccessMode => {
   if (typeof window === "undefined") return null;
   const v = window.localStorage.getItem(KEY);
@@ -59,9 +62,7 @@ const notifyDemo = () => {
   const now = Date.now();
   if (now - demoToastAt < 1500) return;
   demoToastAt = now;
-  toast.error("Demo mode", {
-    description: "Saving, editing and deleting are disabled in the demo.",
-  });
+  toast.error("Locked feature", { description: LOCKED_MESSAGE });
 };
 
 export const installDemoGuard = () => {
@@ -69,6 +70,8 @@ export const installDemoGuard = () => {
   installed = true;
   const original = supabase.from.bind(supabase);
   (supabase as any).from = (table: string) => {
+    // Always allow profile self-update so the unlock-code form can promote demo → full.
+    if (table === "profiles") return original(table as any);
     const builder: any = original(table as any);
     (["insert", "update", "delete", "upsert"] as const).forEach((m) => {
       const orig = builder[m]?.bind(builder);
