@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Trash2, AlertTriangle, Wallet, ChevronRight } from "lucide-react";
+import { Trash2, AlertTriangle, Wallet, ChevronRight, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { UnlockFullAccessCard } from "@/components/UnlockFullAccessCard";
 
