@@ -3,7 +3,7 @@ import { ScreenHeader } from "@/components/ScreenHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
-import { ChevronDown, ChevronRight, Plus } from "lucide-react";
+import { ChevronDown, ChevronRight, Plus, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { AddTradeDialog } from "@/components/AddTradeDialog";
