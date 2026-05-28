@@ -72,3 +72,14 @@ export function useProfile(userId?: string) {
     },
   });
 }
+
+/**
+ * Resolves the signed-in user's access mode from their profile.
+ * Defaults to "full" while loading or if the column is unset, so unauthenticated
+ * flows (sign-in, sign-up) are never accidentally treated as demo.
+ */
+export function useAccessModeFromProfile(userId?: string): "demo" | "full" {
+  const { data } = useProfile(userId);
+  const mode = (data as { access_mode?: string } | null | undefined)?.access_mode;
+  return mode === "demo" ? "demo" : "full";
+}
