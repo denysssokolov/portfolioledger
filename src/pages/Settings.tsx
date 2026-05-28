@@ -52,6 +52,18 @@ export default function Settings() {
           <div className="font-medium mt-1 break-all">{user?.email ?? "—"}</div>
         </div>
 
+        <Button
+          variant="outline"
+          onClick={async () => {
+            await signOut();
+            nav("/auth", { replace: true });
+          }}
+          className="w-full h-12 rounded-xl justify-between"
+        >
+          <span>Sign out</span>
+          <LogOut className="h-4 w-4" />
+        </Button>
+
         <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
           <div className="flex items-start gap-3 mb-4">
             <div className="h-10 w-10 rounded-xl bg-secondary flex items-center justify-center shrink-0 text-primary">
