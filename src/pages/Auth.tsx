@@ -17,6 +17,8 @@ export default function Auth() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [accessCode, setAccessCode] = useState("");
+  const [accessCodeError, setAccessCodeError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
@@ -29,6 +31,7 @@ export default function Auth() {
   useEffect(() => {
     setEmailError(null);
     setFormError(null);
+    setAccessCodeError(null);
   }, [mode]);
 
   const switchMode = (next: Mode) => {
@@ -48,12 +51,21 @@ export default function Auth() {
           setBusy(false);
           return;
         }
+        const code = accessCode.trim();
+        let access_mode: "demo" | "full" | null = null;
+        if (code === "1234") access_mode = "demo";
+        else if (code === "0912") access_mode = "full";
+        else {
+          setAccessCodeError("Invalid access code.");
+          setBusy(false);
+          return;
+        }
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/`,
-            data: { display_name: name.trim() },
+            data: { display_name: name.trim(), access_mode },
           },
         });
         if (error) {
@@ -202,6 +214,32 @@ export default function Auth() {
                   onChange={(e) => setPassword(e.target.value)}
                   className="h-12 rounded-xl bg-secondary border-0"
                 />
+              </div>
+            )}
+
+            {mode === "signup" && (
+              <div className="space-y-2">
+                <Label htmlFor="accessCode">Access code</Label>
+                <Input
+                  id="accessCode"
+                  type="password"
+                  inputMode="numeric"
+                  required
+                  autoComplete="off"
+                  value={accessCode}
+                  onChange={(e) => {
+                    setAccessCode(e.target.value);
+                    if (accessCodeError) setAccessCodeError(null);
+                  }}
+                  placeholder="••••"
+                  aria-invalid={!!accessCodeError}
+                  className={`h-12 rounded-xl bg-secondary border-0 text-center tracking-[0.4em] text-lg ${
+                    accessCodeError ? "ring-2 ring-destructive" : ""
+                  }`}
+                />
+                {accessCodeError && (
+                  <p className="text-sm font-medium text-destructive">{accessCodeError}</p>
+                )}
               </div>
             )}
 

@@ -106,7 +106,7 @@ export default function SwingTrades() {
       toast(
         `Good to see you! Total PnL: ${fmtUsdSigned(currentTotalPnl)}` +
           (diff != null ? ` · since yesterday ${fmtUsdSigned(diff)}` : ""),
-        { duration: 6000 }
+        { duration: Infinity }
       );
       localStorage.setItem(lastKey, today);
       localStorage.setItem(pnlKey, String(currentTotalPnl));

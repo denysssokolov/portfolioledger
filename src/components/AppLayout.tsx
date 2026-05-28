@@ -3,6 +3,7 @@ import { LayoutDashboard, ArrowLeftRight, CalendarRange, Settings as SettingsIco
 import { cn } from "@/lib/utils";
 import { SafetyModeToggle } from "@/components/SafetyModeToggle";
 import { ServiceSwitcher } from "@/components/ServiceSwitcher";
+import { ClearAllToasts, NotificationCenter } from "@/components/NotificationCenter";
 import { useRecurringMaterialiser } from "@/hooks/useRecurringMaterialiser";
 
 const tabs = [
@@ -18,6 +19,8 @@ const AppLayout = () => {
     <div className="min-h-screen bg-background text-foreground">
       <ServiceSwitcher />
       <SafetyModeToggle />
+      <NotificationCenter />
+      <ClearAllToasts />
       <main className="mx-auto max-w-2xl pb-28">
         <Outlet />
       </main>

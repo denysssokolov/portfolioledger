@@ -3,6 +3,7 @@ import { BarChart3, LineChart, Database, Settings as SettingsIcon } from "lucide
 import { cn } from "@/lib/utils";
 import { ServiceSwitcher } from "@/components/ServiceSwitcher";
 import { SafetyModeToggle } from "@/components/SafetyModeToggle";
+import { ClearAllToasts, NotificationCenter } from "@/components/NotificationCenter";
 
 const tabs = [
   { to: "/swing-trades", label: "Trades", icon: BarChart3, end: true },
@@ -16,6 +17,8 @@ const SwingTradesLayout = () => {
     <div className="min-h-screen bg-background text-foreground">
       <ServiceSwitcher />
       <SafetyModeToggle />
+      <NotificationCenter />
+      <ClearAllToasts />
       <main className="mx-auto max-w-2xl pb-28">
         <Outlet />
       </main>
