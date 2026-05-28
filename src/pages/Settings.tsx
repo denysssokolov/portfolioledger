@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Trash2, AlertTriangle, Wallet, ChevronRight, LogOut } from "lucide-react";
 import { toast } from "sonner";
-import { UnlockFullAccessCard } from "@/components/UnlockFullAccessCard";
 
 export default function Settings() {
   const { user, signOut } = useAuth();
@@ -44,7 +43,6 @@ export default function Settings() {
     <>
       <ScreenHeader title="Settings" subtitle="Manage your account." />
       <div className="px-5 space-y-4">
-        <UnlockFullAccessCard />
         <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
           <div className="text-xs uppercase tracking-wider text-muted-foreground">
             Signed in as

@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session, User } from "@supabase/supabase-js";
-import { setAccessMode } from "@/lib/accessMode";
 
 type Ctx = {
   user: User | null;
@@ -17,10 +16,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
       setLoading(false);
-      if (event === "SIGNED_OUT") setAccessMode(null);
     });
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
