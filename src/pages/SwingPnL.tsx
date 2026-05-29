@@ -218,7 +218,7 @@ export default function SwingPnL() {
                     <div className="border-t border-border bg-background/30">
                       <div className="divide-y divide-border">
                         {g.trades
-                          .filter((t) => t.status === "active" || showClosed[g.ticker])
+                          .filter((t) => t.status === "active")
                           .map((t) => {
                             const q = quotes[t.ticker] ?? null;
                             const pnl = pnlOf(t, q);
@@ -292,22 +292,89 @@ export default function SwingPnL() {
 
                       {/* Show / hide closed positions */}
                       {g.trades.some((t) => t.status === "closed") && (
-                        <button
-                          onClick={() =>
-                            setShowClosed((s) => ({ ...s, [g.ticker]: !s[g.ticker] }))
-                          }
-                          className="w-full px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-muted/30 flex items-center justify-center gap-1.5 border-t border-border"
-                        >
-                          {showClosed[g.ticker] ? (
-                            <>
-                              <EyeOff className="h-3.5 w-3.5" /> Hide closed positions
-                            </>
-                          ) : (
-                            <>
-                              <Eye className="h-3.5 w-3.5" /> Show closed positions
-                            </>
+                        <>
+                          <button
+                            onClick={() =>
+                              setShowClosed((s) => ({ ...s, [g.ticker]: !s[g.ticker] }))
+                            }
+                            className="w-full px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-muted/30 flex items-center justify-center gap-1.5 border-t border-border"
+                          >
+                            {showClosed[g.ticker] ? (
+                              <>
+                                <EyeOff className="h-3.5 w-3.5" /> Hide closed positions
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="h-3.5 w-3.5" /> Show closed positions
+                              </>
+                            )}
+                          </button>
+                          {showClosed[g.ticker] && (
+                            <div className="divide-y divide-border border-t border-border bg-muted/10">
+                              {g.trades
+                                .filter((t) => t.status === "closed")
+                                .slice()
+                                .sort((a, b) => {
+                                  const ad = a.exit_date ?? a.entry_date;
+                                  const bd = b.exit_date ?? b.entry_date;
+                                  return bd.localeCompare(ad);
+                                })
+                                .map((t) => {
+                                  const q = quotes[t.ticker] ?? null;
+                                  const pnl = pnlOf(t, q);
+                                  return (
+                                    <div key={t.id} className="px-3 py-2.5 text-xs">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-2">
+                                          <span
+                                            className={cn(
+                                              "text-[10px] font-medium px-1.5 py-0.5 rounded-full",
+                                              t.direction === "long"
+                                                ? "bg-emerald-500/20 text-emerald-400"
+                                                : "bg-red-500/20 text-red-400"
+                                            )}
+                                          >
+                                            {t.direction.toUpperCase()}
+                                          </span>
+                                          <span className="text-muted-foreground">
+                                            {format(new Date(t.entry_date), "MMM d")}
+                                            {t.exit_date && ` → ${format(new Date(t.exit_date), "MMM d")}`}
+                                            {" · "}
+                                            {fmtUsd(t.capital_invested, 0)}
+                                          </span>
+                                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
+                                            CLOSED
+                                          </span>
+                                        </div>
+                                        {pnl != null && (
+                                          <span
+                                            className={cn(
+                                              "font-semibold",
+                                              pnl >= 0 ? "text-emerald-400" : "text-red-400"
+                                            )}
+                                          >
+                                            {fmtUsdSigned(pnl)}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div className="flex items-center justify-end mt-1 text-[11px]">
+                                        <button
+                                          onClick={() => {
+                                            setEditing(t);
+                                            setAddingTicker(null);
+                                            setDialogOpen(true);
+                                          }}
+                                          className="text-primary hover:underline"
+                                        >
+                                          Edit
+                                        </button>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                            </div>
                           )}
-                        </button>
+                        </>
                       )}
 
                       {/* Close all + Add trade buttons */}
