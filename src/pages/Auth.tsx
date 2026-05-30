@@ -140,7 +140,13 @@ export default function Auth() {
           <h1 className="font-display text-2xl font-bold mb-1">{title}</h1>
           <p className="text-sm text-muted-foreground mb-6">{subtitle}</p>
 
-          <div className="space-y-4">
+          <form
+            className="space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!busy) onSubmit();
+            }}
+          >
             {mode === "signup" && (
               <div className="space-y-2">
                 <Label htmlFor="name">Your name</Label>
@@ -209,8 +215,7 @@ export default function Auth() {
             )}
 
             <Button
-              type="button"
-              onClick={onSubmit}
+              type="submit"
               disabled={busy}
               className="w-full h-12 rounded-xl bg-gradient-primary text-primary-foreground hover:opacity-90 font-semibold shadow-elegant"
             >
@@ -222,7 +227,7 @@ export default function Auth() {
                 ? "Create account"
                 : "Send reset link"}
             </Button>
-          </div>
+          </form>
 
           <button
             type="button"
