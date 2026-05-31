@@ -19,7 +19,7 @@ import type { Trade } from "@/lib/tradeStats";
 import { pnlOf, pnlPctOf } from "@/lib/tradeStats";
 import { fmtUsdSigned } from "@/lib/format";
 import { useSafetyMode } from "@/hooks/useSafetyMode";
-import { useQuotes } from "@/hooks/useQuotes";
+import { useQuotes, useQuotesRefresh } from "@/hooks/useQuotes";
 
 export default function SwingTrades() {
   const { user } = useAuth();
@@ -29,6 +29,7 @@ export default function SwingTrades() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Trade | null>(null);
   const quotes = useQuotes();
+  const refreshQuotes = useQuotesRefresh();
   const [accountSize, setAccountSize] = useState<number | null>(null);
   const [search, setSearch] = useState("");
   const [monthFilter, setMonthFilter] = useState<string>("all");
@@ -248,7 +249,7 @@ export default function SwingTrades() {
       <AddTradeDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        onSaved={fetchTrades}
+        onSaved={() => { fetchTrades(); refreshQuotes(); }}
         trade={editing}
       />
     </>
