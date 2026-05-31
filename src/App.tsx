@@ -55,6 +55,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <QuotesProvider>
           <ScrollToTop />
           <Routes>
             <Route path="/auth" element={<Auth />} />
@@ -84,9 +85,7 @@ const App = () => (
             <Route
               element={
                 <Gate>
-                  <QuotesProvider>
-                    <SwingTradesLayout />
-                  </QuotesProvider>
+                  <SwingTradesLayout />
                 </Gate>
               }
             >
@@ -98,6 +97,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           <CookieBanner />
+          </QuotesProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
