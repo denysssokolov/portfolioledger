@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useRef, useCallback, ReactNode, createElement } from "react";
+import { createContext, useContext, useEffect, useState, useRef, ReactNode, createElement } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import type { Quote } from "@/lib/tradeStats";
@@ -7,7 +7,6 @@ const STORAGE_KEY = "swing_quotes_cache";
 const REFRESH_MS = 15 * 60 * 1000;
 
 const QuotesContext = createContext<Record<string, Quote>>({});
-const QuotesRefreshContext = createContext<() => void>(() => {});
 
 function loadCache(): Record<string, Quote> {
   try {
@@ -24,7 +23,6 @@ export function QuotesProvider({ children }: { children: ReactNode }) {
   const { user, session } = useAuth();
   const [quotes, setQuotes] = useState<Record<string, Quote>>(loadCache);
   const quotesRef = useRef<Record<string, Quote>>(loadCache());
-  const fetchRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     if (!user || !session) return;
@@ -53,31 +51,16 @@ export function QuotesProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    fetchRef.current = fetchQuotes;
     fetchQuotes();
     const i = setInterval(fetchQuotes, REFRESH_MS);
     const onVisible = () => { if (document.visibilityState === "visible") fetchQuotes(); };
     document.addEventListener("visibilitychange", onVisible);
-    return () => {
-      clearInterval(i);
-      document.removeEventListener("visibilitychange", onVisible);
-      fetchRef.current = () => {};
-    };
+    return () => { clearInterval(i); document.removeEventListener("visibilitychange", onVisible); };
   }, [user, session]);
 
-  const refresh = useCallback(() => fetchRef.current(), []);
-
-  return createElement(
-    QuotesContext.Provider,
-    { value: quotes },
-    createElement(QuotesRefreshContext.Provider, { value: refresh }, children)
-  );
+  return createElement(QuotesContext.Provider, { value: quotes }, children);
 }
 
 export function useQuotes() {
   return useContext(QuotesContext);
-}
-
-export function useQuotesRefresh() {
-  return useContext(QuotesRefreshContext);
 }
