@@ -294,6 +294,12 @@ export default function SwingPnL() {
                                         Close
                                       </button>
                                     )}
+                                    <button
+                                      onClick={() => deleteTrade(t)}
+                                      className="text-red-400 hover:underline"
+                                    >
+                                      Delete
+                                    </button>
                                   </div>
                                 </div>
                               </div>
@@ -369,6 +375,7 @@ export default function SwingPnL() {
                                         )}
                                       </div>
                                       <div className="flex items-center justify-end mt-1 text-[11px]">
+                                        <div className="flex gap-3">
                                         <button
                                           onClick={() => {
                                             setEditing(t);
@@ -379,6 +386,13 @@ export default function SwingPnL() {
                                         >
                                           Edit
                                         </button>
+                                        <button
+                                          onClick={() => deleteTrade(t)}
+                                          className="text-red-400 hover:underline"
+                                        >
+                                          Delete
+                                        </button>
+                                        </div>
                                       </div>
                                     </div>
                                   );
