@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { format } from "date-fns";
 import { CalendarIcon, Trash2 } from "lucide-react";
 import {
@@ -68,6 +68,13 @@ export function AddTradeDialog({ open, onOpenChange, onSaved, trade, defaultTick
   const [useCurrentExit, setUseCurrentExit] = useState(true);
   const [openSiblingCount, setOpenSiblingCount] = useState(0);
   const [closingAll, setClosingAll] = useState(false);
+  const tickerInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!open || trade) return;
+    const id = setTimeout(() => tickerInputRef.current?.focus(), 50);
+    return () => clearTimeout(id);
+  }, [open, trade]);
 
   // Load distinct tickers + existing stop losses on open trades for autocomplete + 1-click SL copy
   useEffect(() => {
@@ -442,6 +449,7 @@ export function AddTradeDialog({ open, onOpenChange, onSaved, trade, defaultTick
               <Label className="text-xs text-muted-foreground mb-1.5 block">Ticker</Label>
               <div className="relative">
                 <Input
+                  ref={tickerInputRef}
                   value={ticker}
                   onChange={(e) => {
                     setTicker(e.target.value.toUpperCase());
