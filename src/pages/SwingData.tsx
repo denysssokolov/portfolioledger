@@ -1,12 +1,13 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSafetyMode } from "@/hooks/useSafetyMode";
 import { cn } from "@/lib/utils";
-import type { Trade, Quote } from "@/lib/tradeStats";
+import type { Trade } from "@/lib/tradeStats";
 import { computeStats } from "@/lib/tradeStats";
 import { fmtUsd, fmtUsdSigned } from "@/lib/format";
+import { useQuotes } from "@/hooks/useQuotes";
 
 const Stat = ({
   label,
@@ -38,10 +39,10 @@ const fmtDays = (n: number) => (n >= 1 ? `${n.toFixed(1)}d` : `${(n * 24).toFixe
 const fmtPF = (n: number) => (isFinite(n) ? n.toFixed(2) : "∞");
 
 export default function SwingData() {
-  const { user, session } = useAuth();
+  const { user } = useAuth();
   useSafetyMode();
   const [trades, setTrades] = useState<Trade[]>([]);
-  const [quotes, setQuotes] = useState<Record<string, Quote>>({});
+  const quotes = useQuotes();
   const [accountSize, setAccountSize] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
@@ -56,22 +57,6 @@ export default function SwingData() {
       setLoading(false);
     });
   }, [user]);
-
-  const fetchQuotes = useCallback(async () => {
-    if (!session) return;
-    if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
-    const tickers = [...new Set(trades.filter((t) => t.status === "active").map((t) => t.ticker))];
-    if (!tickers.length) return;
-    const { data } = await supabase.functions.invoke("finnhub-quotes", { body: { tickers } });
-    if (data?.quotes) setQuotes(data.quotes);
-  }, [session, trades]);
-
-  useEffect(() => {
-    if (!trades.length) return;
-    fetchQuotes();
-    const i = setInterval(fetchQuotes, 900000);
-    return () => clearInterval(i);
-  }, [fetchQuotes, trades]);
 
   const s = computeStats(trades, quotes, accountSize);
 
