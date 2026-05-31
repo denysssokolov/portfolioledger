@@ -3,14 +3,26 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import type { Quote } from "@/lib/tradeStats";
 
+const STORAGE_KEY = "swing_quotes_cache";
+const REFRESH_MS = 15 * 60 * 1000;
+
 const QuotesContext = createContext<Record<string, Quote>>({});
 
-const REFRESH_MS = 15 * 60 * 1000;
+function loadCache(): Record<string, Quote> {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
+
+function saveCache(q: Record<string, Quote>) {
+  try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(q)); } catch {}
+}
 
 export function QuotesProvider({ children }: { children: ReactNode }) {
   const { user, session } = useAuth();
-  const [quotes, setQuotes] = useState<Record<string, Quote>>({});
-  const quotesRef = useRef<Record<string, Quote>>({});
+  const [quotes, setQuotes] = useState<Record<string, Quote>>(loadCache);
+  const quotesRef = useRef<Record<string, Quote>>(loadCache());
 
   useEffect(() => {
     if (!user || !session) return;
@@ -26,6 +38,7 @@ export function QuotesProvider({ children }: { children: ReactNode }) {
       const { data } = await supabase.functions.invoke("finnhub-quotes", { body: { tickers } });
       if (data?.quotes) {
         quotesRef.current = { ...quotesRef.current, ...data.quotes };
+        saveCache(quotesRef.current);
         setQuotes({ ...quotesRef.current });
       }
     };
