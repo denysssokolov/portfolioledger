@@ -69,7 +69,7 @@ export default function SwingData() {
   useEffect(() => {
     if (!trades.length) return;
     fetchQuotes();
-    const i = setInterval(fetchQuotes, 150000);
+    const i = setInterval(fetchQuotes, 900000);
     return () => clearInterval(i);
   }, [fetchQuotes, trades]);
 
