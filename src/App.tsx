@@ -21,6 +21,7 @@ import SwingPnL from "./pages/SwingPnL";
 import SwingData from "./pages/SwingData";
 import SwingSettings from "./pages/SwingSettings";
 import SwingTradesLayout from "./components/SwingTradesLayout";
+import { QuotesProvider } from "@/hooks/useQuotes";
 import NotFound from "./pages/NotFound.tsx";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { CookieBanner } from "./components/CookieBanner";
@@ -83,7 +84,9 @@ const App = () => (
             <Route
               element={
                 <Gate>
-                  <SwingTradesLayout />
+                  <QuotesProvider>
+                    <SwingTradesLayout />
+                  </QuotesProvider>
                 </Gate>
               }
             >
