@@ -7,10 +7,11 @@ import { ChevronDown, ChevronRight, Plus, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { AddTradeDialog } from "@/components/AddTradeDialog";
-import type { Trade, Quote } from "@/lib/tradeStats";
+import type { Trade } from "@/lib/tradeStats";
 import { pnlOf, sharesOf, riskAtStop } from "@/lib/tradeStats";
 import { fmtUsd, fmtUsdSigned } from "@/lib/format";
 import { useSafetyMode } from "@/hooks/useSafetyMode";
+import { useQuotes } from "@/hooks/useQuotes";
 
 type Group = {
   ticker: string;
@@ -23,10 +24,10 @@ type Group = {
 };
 
 export default function SwingPnL() {
-  const { user, session } = useAuth();
+  const { user } = useAuth();
   useSafetyMode();
   const [trades, setTrades] = useState<Trade[]>([]);
-  const [quotes, setQuotes] = useState<Record<string, Quote>>({});
+  const quotes = useQuotes();
   const [accountSize, setAccountSize] = useState<number | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [editing, setEditing] = useState<Trade | null>(null);
@@ -56,22 +57,6 @@ export default function SwingPnL() {
       .maybeSingle()
       .then(({ data }) => setAccountSize(data?.account_size ?? null));
   }, [user, fetchTrades]);
-
-  const fetchQuotes = useCallback(async () => {
-    if (!session) return;
-    if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
-    const tickers = [...new Set(trades.filter((t) => t.status === "active").map((t) => t.ticker))];
-    if (!tickers.length) return;
-    const { data } = await supabase.functions.invoke("finnhub-quotes", { body: { tickers } });
-    if (data?.quotes) setQuotes(data.quotes);
-  }, [session, trades]);
-
-  useEffect(() => {
-    if (!trades.length) return;
-    fetchQuotes();
-    const i = setInterval(fetchQuotes, 900000);
-    return () => clearInterval(i);
-  }, [fetchQuotes, trades]);
 
   const groups: Group[] = useMemo(() => {
     const map = new Map<string, Trade[]>();

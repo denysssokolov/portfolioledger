@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Plus, Search } from "lucide-react";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,19 +15,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Trade, Quote } from "@/lib/tradeStats";
+import type { Trade } from "@/lib/tradeStats";
 import { pnlOf, pnlPctOf } from "@/lib/tradeStats";
 import { fmtUsdSigned } from "@/lib/format";
 import { useSafetyMode } from "@/hooks/useSafetyMode";
+import { useQuotes } from "@/hooks/useQuotes";
 
 export default function SwingTrades() {
-  const { user, session } = useAuth();
+  const { user } = useAuth();
   useSafetyMode(); // re-render when safety mode toggles
   const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Trade | null>(null);
-  const [quotes, setQuotes] = useState<Record<string, Quote>>({});
+  const quotes = useQuotes();
   const [accountSize, setAccountSize] = useState<number | null>(null);
   const [search, setSearch] = useState("");
   const [monthFilter, setMonthFilter] = useState<string>("all");
@@ -57,33 +58,9 @@ export default function SwingTrades() {
       .then(({ data }) => setAccountSize(data?.account_size ?? null));
   }, [user]);
 
-  const fetchQuotes = useCallback(async () => {
-    if (!session) return;
-    if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
-    const activeTickers = trades.filter((t) => t.status === "active").map((t) => t.ticker);
-    if (activeTickers.length === 0) return;
-    const unique = [...new Set(activeTickers)];
-    try {
-      const { data, error } = await supabase.functions.invoke("finnhub-quotes", {
-        body: { tickers: unique },
-      });
-      if (error) return;
-      if (data?.quotes) setQuotes(data.quotes);
-    } catch (e) {
-      console.error("Quote fetch failed:", e);
-    }
-  }, [session, trades]);
-
   useEffect(() => {
     fetchTrades();
   }, [user]);
-
-  useEffect(() => {
-    if (trades.length === 0) return;
-    fetchQuotes();
-    const interval = setInterval(fetchQuotes, 900000);
-    return () => clearInterval(interval);
-  }, [fetchQuotes, trades]);
 
   // First-trade-of-day notification: when user opens this page on a new calendar day,
   // show current PnL level and the change since yesterday's stored level.
