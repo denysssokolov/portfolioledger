@@ -13,7 +13,6 @@ export function QuotesProvider({ children }: { children: ReactNode }) {
 
   const fetchQuotes = useCallback(async () => {
     if (!user || !session) return;
-    if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
     const { data: trades } = await supabase
       .from("swing_trades")
       .select("ticker")
@@ -29,7 +28,8 @@ export function QuotesProvider({ children }: { children: ReactNode }) {
     if (!user || !session) return;
     fetchQuotes();
     const i = setInterval(fetchQuotes, REFRESH_MS);
-    return () => clearInterval(i);
+    document.addEventListener("visibilitychange", fetchQuotes);
+    return () => { clearInterval(i); document.removeEventListener("visibilitychange", fetchQuotes); };
   }, [user, session, fetchQuotes]);
 
   return createElement(QuotesContext.Provider, { value: quotes }, children);
