@@ -151,6 +151,17 @@ export default function SwingPnL() {
     fetchTrades();
   };
 
+  const deleteTrade = async (t: Trade) => {
+    if (!confirm(`Delete this ${t.ticker} trade? This cannot be undone.`)) return;
+    const { error } = await supabase.from("swing_trades").delete().eq("id", t.id);
+    if (error) {
+      toast.error("Couldn't delete trade");
+      return;
+    }
+    toast.success("Trade deleted");
+    fetchTrades();
+  };
+
   return (
     <>
       <ScreenHeader title="PnL" subtitle="Aggregated by stock" />
