@@ -151,6 +151,17 @@ export default function SwingPnL() {
     fetchTrades();
   };
 
+  const deleteTrade = async (t: Trade) => {
+    if (!confirm(`Delete this ${t.ticker} trade? This cannot be undone.`)) return;
+    const { error } = await supabase.from("swing_trades").delete().eq("id", t.id);
+    if (error) {
+      toast.error("Couldn't delete trade");
+      return;
+    }
+    toast.success("Trade deleted");
+    fetchTrades();
+  };
+
   return (
     <>
       <ScreenHeader title="PnL" subtitle="Aggregated by stock" />
@@ -283,6 +294,12 @@ export default function SwingPnL() {
                                         Close
                                       </button>
                                     )}
+                                    <button
+                                      onClick={() => deleteTrade(t)}
+                                      className="text-red-400 hover:underline"
+                                    >
+                                      Delete
+                                    </button>
                                   </div>
                                 </div>
                               </div>
@@ -358,6 +375,7 @@ export default function SwingPnL() {
                                         )}
                                       </div>
                                       <div className="flex items-center justify-end mt-1 text-[11px]">
+                                        <div className="flex gap-3">
                                         <button
                                           onClick={() => {
                                             setEditing(t);
@@ -368,6 +386,13 @@ export default function SwingPnL() {
                                         >
                                           Edit
                                         </button>
+                                        <button
+                                          onClick={() => deleteTrade(t)}
+                                          className="text-red-400 hover:underline"
+                                        >
+                                          Delete
+                                        </button>
+                                        </div>
                                       </div>
                                     </div>
                                   );
