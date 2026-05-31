@@ -145,11 +145,20 @@ export function AddTradeDialog({ open, onOpenChange, onSaved, trade, defaultTick
         const { data, error } = await supabase.functions.invoke("finnhub-quotes", {
           body: { tickers: [t] },
         });
-        if (error) return false;
-        const q = data?.quotes?.[t];
-        return q !== null && q !== undefined;
+        // If the call itself failed, don't block the user — allow the save.
+        if (error) return true;
+        // If the response shape is unexpected, allow it through rather than blocking.
+        if (!data || !data.quotes || !(t in data.quotes)) return true;
+        const q = data.quotes[t];
+        // Network/fetch error inside the function returns null — treat as inconclusive, allow.
+        if (q === null || q === undefined) return true;
+        // Finnhub returns { c: 0, d: null, dp: null } for symbols it doesn't recognise.
+        // Only reject when we have that definitive "unknown symbol" signal.
+        if (q.c === 0 && q.d == null && q.dp == null) return false;
+        return true;
       } catch {
-        return false;
+        // Network exception — inconclusive, allow.
+        return true;
       }
     },
     []
