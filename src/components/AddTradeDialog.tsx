@@ -198,13 +198,6 @@ export function AddTradeDialog({ open, onOpenChange, onSaved, trade, defaultTick
     };
   }, [open, ticker]);
 
-  // If the market is closed (no current price), keep entry field editable.
-  useEffect(() => {
-    if (currentPrice == null && useCurrentEntry && !quoteLoading) {
-      setUseCurrentEntry(false);
-    }
-  }, [currentPrice, useCurrentEntry, quoteLoading]);
-
   // Count other open trades for the same ticker (for "close all" affordance)
   useEffect(() => {
     if (!open || !user) {
