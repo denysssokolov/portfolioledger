@@ -37,9 +37,17 @@ export function QuotesProvider({ children }: { children: ReactNode }) {
       if (!tickers.length) return;
       const { data } = await supabase.functions.invoke("finnhub-quotes", { body: { tickers } });
       if (data?.quotes) {
-        quotesRef.current = { ...quotesRef.current, ...data.quotes };
-        saveCache(quotesRef.current);
-        setQuotes({ ...quotesRef.current });
+        const incoming = data.quotes as Record<string, { c: number; dp: number; d: number } | null>;
+        const merged = { ...quotesRef.current };
+        for (const ticker of Object.keys(incoming)) {
+          const q = incoming[ticker];
+          if (q && q.c > 0) {
+            merged[ticker] = q;
+          }
+        }
+        quotesRef.current = merged;
+        saveCache(merged);
+        setQuotes({ ...merged });
       }
     };
 
