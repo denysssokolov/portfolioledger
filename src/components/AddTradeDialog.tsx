@@ -147,7 +147,7 @@ export function AddTradeDialog({ open, onOpenChange, onSaved, trade, defaultTick
         });
         if (error) return false;
         const q = data?.quotes?.[t];
-        return !!(q && typeof q.c === "number" && q.c > 0);
+        return q !== null && q !== undefined;
       } catch {
         return false;
       }
@@ -188,6 +188,13 @@ export function AddTradeDialog({ open, onOpenChange, onSaved, trade, defaultTick
       clearTimeout(timer);
     };
   }, [open, ticker]);
+
+  // If the market is closed (no current price), keep entry field editable.
+  useEffect(() => {
+    if (currentPrice == null && useCurrentEntry && !quoteLoading) {
+      setUseCurrentEntry(false);
+    }
+  }, [currentPrice, useCurrentEntry, quoteLoading]);
 
   // Count other open trades for the same ticker (for "close all" affordance)
   useEffect(() => {
@@ -530,10 +537,13 @@ export function AddTradeDialog({ open, onOpenChange, onSaved, trade, defaultTick
                         setUseCurrentEntry(checked);
                         if (checked) setEntryPrice("");
                       }}
-                      disabled={currentPrice == null}
                     />
                     Use current price
-                    {quoteLoading && currentPrice == null ? " (loading…)" : ""}
+                    {quoteLoading && currentPrice == null
+                      ? " (loading…)"
+                      : currentPrice == null
+                      ? " (market closed)"
+                      : ""}
                   </label>
                 )}
               </div>
