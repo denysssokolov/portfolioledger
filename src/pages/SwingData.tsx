@@ -59,6 +59,7 @@ export default function SwingData() {
 
   const fetchQuotes = useCallback(async () => {
     if (!session) return;
+    if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
     const tickers = [...new Set(trades.filter((t) => t.status === "active").map((t) => t.ticker))];
     if (!tickers.length) return;
     const { data } = await supabase.functions.invoke("finnhub-quotes", { body: { tickers } });
@@ -68,7 +69,7 @@ export default function SwingData() {
   useEffect(() => {
     if (!trades.length) return;
     fetchQuotes();
-    const i = setInterval(fetchQuotes, 15000);
+    const i = setInterval(fetchQuotes, 150000);
     return () => clearInterval(i);
   }, [fetchQuotes, trades]);
 

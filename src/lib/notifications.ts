@@ -58,16 +58,10 @@ export const subscribeNotifications = (cb: () => void) => {
 };
 
 const pushHistory = (kind: NotifKind, title: string, description?: string) => {
-  if (typeof window === "undefined") return;
-  const list = safeRead();
-  list.unshift({
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-    kind,
-    title,
-    description,
-    ts: Date.now(),
-  });
-  safeWrite(list);
+  // Notification history disabled — we keep popups only.
+  void kind;
+  void title;
+  void description;
 };
 
 // --- "active toast count" tracker so the floating Clear-all button knows when
