@@ -59,6 +59,7 @@ export default function SwingTrades() {
 
   const fetchQuotes = useCallback(async () => {
     if (!session) return;
+    if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
     const activeTickers = trades.filter((t) => t.status === "active").map((t) => t.ticker);
     if (activeTickers.length === 0) return;
     const unique = [...new Set(activeTickers)];
@@ -80,7 +81,7 @@ export default function SwingTrades() {
   useEffect(() => {
     if (trades.length === 0) return;
     fetchQuotes();
-    const interval = setInterval(fetchQuotes, 15000);
+    const interval = setInterval(fetchQuotes, 150000);
     return () => clearInterval(interval);
   }, [fetchQuotes, trades]);
 
