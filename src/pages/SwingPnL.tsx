@@ -81,6 +81,10 @@ export default function SwingPnL() {
             ? null
             : withSl.reduce((s, t) => s + (t.stop_loss as number) * sharesOf(t), 0) /
               withSl.reduce((s, t) => s + sharesOf(t), 0);
+        const totalRiskAtStop =
+          withSl.length === 0
+            ? null
+            : withSl.reduce((s, t) => s + (riskAtStop(t) ?? 0), 0);
         return {
           ticker,
           trades: arr,
@@ -89,6 +93,7 @@ export default function SwingPnL() {
           stopLoss,
           totalPnl,
           equityTaken,
+          totalRiskAtStop,
         };
       })
       .sort((a, b) => b.totalPnl - a.totalPnl);
