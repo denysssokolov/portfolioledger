@@ -22,6 +22,7 @@ type Group = {
   stopLoss: number | null;
   totalPnl: number;
   equityTaken: number;
+  totalRiskAtStop: number | null;
 };
 
 export default function SwingPnL() {
