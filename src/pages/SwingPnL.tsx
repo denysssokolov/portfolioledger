@@ -12,6 +12,7 @@ import { pnlOf, sharesOf, riskAtStop } from "@/lib/tradeStats";
 import { fmtUsd, fmtUsdSigned } from "@/lib/format";
 import { useSafetyMode } from "@/hooks/useSafetyMode";
 import { useQuotes } from "@/hooks/useQuotes";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 type Group = {
   ticker: string;
@@ -35,6 +36,7 @@ export default function SwingPnL() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showClosed, setShowClosed] = useState<Record<string, boolean>>({});
+  const [tab, setTab] = useState<"open" | "closed">("open");
 
   const fetchTrades = useCallback(async () => {
     if (!user) return;
@@ -90,6 +92,15 @@ export default function SwingPnL() {
       })
       .sort((a, b) => b.totalPnl - a.totalPnl);
   }, [trades, quotes]);
+
+  const openGroups = useMemo(
+    () => groups.filter((g) => g.open.length > 0),
+    [groups]
+  );
+  const closedGroups = useMemo(
+    () => groups.filter((g) => g.open.length === 0),
+    [groups]
+  );
 
   const closeTradeNow = async (t: Trade) => {
     const q = quotes[t.ticker] ?? null;
@@ -152,15 +163,22 @@ export default function SwingPnL() {
     <>
       <ScreenHeader title="PnL" subtitle="Aggregated by stock" />
       <div className="px-5 mt-5 pb-28">
-        {loading ? (
-          <div className="text-center text-sm text-muted-foreground py-10">Loading…</div>
-        ) : groups.length === 0 ? (
-          <div className="rounded-2xl bg-card border border-border p-6 text-center text-sm text-muted-foreground">
-            Add trades to see PnL.
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {groups.map((g) => {
+        <Tabs value={tab} onValueChange={(v) => setTab(v as "open" | "closed")}>
+          <TabsList className="grid grid-cols-2 w-full mb-4">
+            <TabsTrigger value="open">Open ({openGroups.length})</TabsTrigger>
+            <TabsTrigger value="closed">Closed ({closedGroups.length})</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="open">
+            {loading ? (
+              <div className="text-center text-sm text-muted-foreground py-10">Loading…</div>
+            ) : openGroups.length === 0 ? (
+              <div className="rounded-2xl bg-card border border-border p-6 text-center text-sm text-muted-foreground">
+                No open positions.
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {openGroups.map((g) => {
               const isOpen = expanded[g.ticker];
               const equityPct =
                 accountSize && accountSize > 0
@@ -416,9 +434,112 @@ export default function SwingPnL() {
                   )}
                 </div>
               );
-            })}
-          </div>
-        )}
+                })}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="closed">
+            {loading ? (
+              <div className="text-center text-sm text-muted-foreground py-10">Loading…</div>
+            ) : closedGroups.length === 0 ? (
+              <div className="rounded-2xl bg-card border border-border p-6 text-center text-sm text-muted-foreground">
+                No fully-closed tickers yet.
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {closedGroups.map((g) => (
+                  <div
+                    key={g.ticker}
+                    className="rounded-xl bg-card border border-border overflow-hidden"
+                  >
+                    <div className="px-3 py-2.5 flex items-center justify-between gap-2">
+                      <span className="font-semibold text-sm">{g.ticker}</span>
+                      <span
+                        className={cn(
+                          "text-sm font-semibold",
+                          g.totalPnl >= 0 ? "text-emerald-400" : "text-red-400"
+                        )}
+                      >
+                        {fmtUsdSigned(g.totalPnl)}
+                      </span>
+                    </div>
+                    <div className="divide-y divide-border border-t border-border bg-background/30">
+                      {g.trades
+                        .slice()
+                        .sort((a, b) => {
+                          const ad = a.exit_date ?? a.entry_date;
+                          const bd = b.exit_date ?? b.entry_date;
+                          return bd.localeCompare(ad);
+                        })
+                        .map((t) => {
+                          const pnl = pnlOf(t, null);
+                          return (
+                            <div key={t.id} className="px-3 py-2.5 text-xs">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2">
+                                  <span
+                                    className={cn(
+                                      "text-[10px] font-medium px-1.5 py-0.5 rounded-full",
+                                      t.direction === "long"
+                                        ? "bg-emerald-500/20 text-emerald-400"
+                                        : "bg-red-500/20 text-red-400"
+                                    )}
+                                  >
+                                    {t.direction.toUpperCase()}
+                                  </span>
+                                  <span className="text-muted-foreground">
+                                    {format(new Date(t.entry_date), "MMM d")}
+                                    {t.exit_date && ` → ${format(new Date(t.exit_date), "MMM d")}`}
+                                    {" · "}
+                                    {fmtUsd(t.capital_invested, 0)}
+                                  </span>
+                                </div>
+                                {pnl != null && (
+                                  <span
+                                    className={cn(
+                                      "font-semibold",
+                                      pnl >= 0 ? "text-emerald-400" : "text-red-400"
+                                    )}
+                                  >
+                                    {fmtUsdSigned(pnl)}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center justify-between mt-1 text-[11px] text-muted-foreground">
+                                <span>
+                                  Entry {fmtUsd(t.entry_price)}
+                                  {t.exit_price != null && ` · Exit ${fmtUsd(t.exit_price)}`}
+                                </span>
+                                <div className="flex gap-3">
+                                  <button
+                                    onClick={() => {
+                                      setEditing(t);
+                                      setAddingTicker(null);
+                                      setDialogOpen(true);
+                                    }}
+                                    className="text-primary hover:underline"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => deleteTrade(t)}
+                                    className="text-red-400 hover:underline"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
 
       <AddTradeDialog
