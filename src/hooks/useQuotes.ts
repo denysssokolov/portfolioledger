@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import type { Quote } from "@/lib/tradeStats";
 
 const STORAGE_KEY = "swing_quotes_cache";
-const REFRESH_MS = 15 * 60 * 1000;
+const REFRESH_MS = 60 * 1000;
 
 const QuotesContext = createContext<Record<string, Quote>>({});
 
@@ -37,13 +37,16 @@ export function QuotesProvider({ children }: { children: ReactNode }) {
       if (!tickers.length) return;
       const { data } = await supabase.functions.invoke("finnhub-quotes", { body: { tickers } });
       if (data?.quotes) {
-        const incoming = data.quotes as Record<string, { c: number; dp: number; d: number } | null>;
+        const incoming = data.quotes as Record<string, { c: number; dp: number; d: number; pc?: number } | null>;
         const merged = { ...quotesRef.current };
         for (const ticker of Object.keys(incoming)) {
           const q = incoming[ticker];
           if (q && q.c > 0) {
             merged[ticker] = q;
+          } else if (q && !merged[ticker] && typeof q.pc === "number" && q.pc > 0) {
+            merged[ticker] = { c: q.pc, dp: 0, d: 0 };
           }
+          // else: keep last recorded price (market closed)
         }
         quotesRef.current = merged;
         saveCache(merged);

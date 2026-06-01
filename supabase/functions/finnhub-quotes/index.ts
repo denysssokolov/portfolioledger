@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
 
     // Fetch quotes in parallel (limit to 50)
     const uniqueTickers = [...new Set(tickers as string[])].slice(0, 50);
-    const quotes: Record<string, { c: number; dp: number; d: number } | null> = {};
+    const quotes: Record<string, { c: number; dp: number; d: number; pc: number } | null> = {};
 
     await Promise.all(
       uniqueTickers.map(async (ticker) => {
@@ -82,8 +82,8 @@ Deno.serve(async (req) => {
             return;
           }
           const data = await res.json();
-          // c = current price, dp = percent change, d = change
-          quotes[ticker] = { c: data.c, dp: data.dp, d: data.d };
+          // c = current price, dp = percent change, d = change, pc = previous close
+          quotes[ticker] = { c: data.c, dp: data.dp, d: data.d, pc: data.pc };
         } catch {
           quotes[ticker] = null;
         }
