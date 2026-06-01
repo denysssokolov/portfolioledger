@@ -224,6 +224,15 @@ export default function SwingPnL() {
                           {g.stopLoss != null && (
                             <span className="ml-2 text-red-400/80">
                               SL {fmtUsd(g.stopLoss)}
+                              {g.totalRiskAtStop != null && (
+                                <span
+                                  className={cn(
+                                    g.totalRiskAtStop >= 0 ? "text-emerald-400" : "text-red-400"
+                                  )}
+                                >
+                                  {" "}({fmtUsdSigned(g.totalRiskAtStop)})
+                                </span>
+                              )}
                             </span>
                           )}
                         </span>
