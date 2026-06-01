@@ -67,8 +67,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Fetch quotes in parallel (limit to 20)
-    const uniqueTickers = [...new Set(tickers as string[])].slice(0, 20);
+    // Fetch quotes in parallel (limit to 50)
+    const uniqueTickers = [...new Set(tickers as string[])].slice(0, 50);
     const quotes: Record<string, { c: number; dp: number; d: number } | null> = {};
 
     await Promise.all(
