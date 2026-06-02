@@ -169,6 +169,9 @@ export default function SwingPnL() {
     <>
       <ScreenHeader title="PnL" subtitle="Aggregated by stock" />
       <div className="px-5 mt-5 pb-28">
+        <div className="text-xs text-muted-foreground mb-2">
+          {groups.length}/50 tickers
+        </div>
         <Tabs value={tab} onValueChange={(v) => setTab(v as "open" | "closed")}>
           <TabsList className="grid grid-cols-2 w-full mb-4">
             <TabsTrigger value="open">Open ({openGroups.length})</TabsTrigger>
